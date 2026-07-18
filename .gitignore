@@ -2,6 +2,9 @@ target/
 *.class
 *.log
 
+# maven-shade-plugin (bench profile) byproduct
+dependency-reduced-pom.xml
+
 # IDE
 .idea/
 *.iml
