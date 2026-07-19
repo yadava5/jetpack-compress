@@ -30,6 +30,23 @@ export const HowStitchPage: React.FC<PageProps> = (p) => (
       <GzipByteLayout />
     </div>
     <Body>{HOW.stitch.body}</Body>
+
+    {/* Member accounting — the fixed framing overhead, all standard-gzip constants. */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, marginTop: 14, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}`, maxWidth: "6.4in" }}>
+      {[
+        { v: "10 B", k: "header", note: "1F 8B 08 · mtime · OS", c: COLORS.GREEN_DEEP },
+        { v: "0 → 0 → 1", k: "BFINAL", note: "SYNC_FLUSH ×N, then finish()", c: COLORS.AMBER_DEEP },
+        { v: "4 B", k: "CRC-32", note: "of the whole input", c: COLORS.GREEN_DEEP },
+        { v: "4 B", k: "ISIZE", note: "input size mod 2³²", c: COLORS.GREEN_DEEP },
+      ].map((x, i) => (
+        <div key={x.k} style={{ padding: "10px 12px", borderLeft: i === 0 ? "none" : `0.5pt solid ${COLORS.HAIRLINE}`, display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 15, fontWeight: 700, color: x.c, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{x.v}</span>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: COLORS.INK_MUTED }}>{x.k}</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9.5, lineHeight: 1.25, color: COLORS.INK_SUBTLE }}>{x.note}</span>
+        </div>
+      ))}
+    </div>
+
     <SourceRail>{HOW.stitch.source}</SourceRail>
   </BodyPage>
 );
@@ -116,16 +133,64 @@ const CrcFold: React.FC = () => {
   );
 };
 
-/** Page 12 — virtual threads, honestly. */
+/** Page 12 — virtual threads, honestly (waffle: cheap threads vs the core ceiling). */
 export const HowVThreadsPage: React.FC<PageProps> = (p) => (
   <BodyPage {...p} sectionLabel="HOW" sectionColor={AMBER} eyebrow={HOW.vthreads.eyebrow} headline={HOW.vthreads.headline}>
     <Lede>{HOW.vthreads.lede}</Lede>
     {HOW.vthreads.body.map((t) => (
       <Body key={t.slice(0, 24)}>{t}</Body>
     ))}
-    <div style={{ marginTop: 22, maxWidth: "6.2in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 18 }}>
+
+    <CarrierCeiling />
+
+    <div style={{ marginTop: 18, maxWidth: "6.2in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
       <PullQuote color={COLORS.INK}>{HOW.vthreads.pullQuote}</PullQuote>
     </div>
     <SourceRail>{HOW.vthreads.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * A unit (waffle) chart of the honest ceiling: virtual threads are spawned one
+ * per block, by the dozens and nearly free; but the real parallelism is pinned
+ * to the ~10 carrier threads ≈ 10 cores — which is exactly the measured ~6.5×.
+ */
+const CarrierCeiling: React.FC = () => {
+  const VT = 40; // illustrative "many cheap vthreads" — schematic, not a count
+  const CORES = 10; // the machine these benchmarks ran on (BENCH_META)
+  return (
+    <div style={{ border: `0.5pt solid ${COLORS.HAIRLINE}`, borderRadius: 6, background: COLORS.PAPER_ELEVATED, padding: 14, marginTop: 18, maxWidth: "6.4in" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: AMBER }}>
+          cheap threads · a hard ceiling
+        </span>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 7, color: COLORS.INK_SUBTLE }}>schematic · 10-core machine</span>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5in", columnGap: 18, alignItems: "center" }}>
+        {/* Left — many cheap vthreads */}
+        <div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, color: COLORS.INK_MUTED, marginBottom: 6 }}>virtual threads — one per block, spawned by the dozens, ~free</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, maxWidth: "3.1in" }}>
+            {Array.from({ length: VT }, (_, i) => (
+              <span key={i} style={{ width: 10, height: 10, borderRadius: 2, border: `1px solid ${AMBER}`, background: COLORS.AMBER_TINT }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Right — the carrier / core ceiling */}
+        <div style={{ borderLeft: `0.5pt solid ${COLORS.HAIRLINE}`, paddingLeft: 18 }}>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, color: COLORS.INK_MUTED, marginBottom: 6 }}>carriers ≈ {CORES} cores — the real parallelism</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {Array.from({ length: CORES }, (_, i) => (
+              <span key={i} style={{ width: 13, height: 13, borderRadius: 2, background: AMBER }} />
+            ))}
+          </div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 13, fontWeight: 700, color: COLORS.INK, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>
+            ≈6.5<span style={{ fontSize: 10 }}>×</span> <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10, fontWeight: 400, color: COLORS.INK_MUTED }}>the measured ceiling</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
