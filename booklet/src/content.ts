@@ -457,10 +457,14 @@ export const BUILD = {
       "source · pom.xml:16 (release 25) · :19 (JUnit 5.11.4) · :20 (JMH 1.37) · :25 (add-modules) · :102 (bench profile)",
   },
 
+  // The Try-It page (page 23, the second-to-last recto). Build + run it locally
+  // in three lines on the left; the live app on a scannable QR card on the
+  // right. The very last page is a pure closing — no QR, no CTA — so this page
+  // owns the "go to the product" moment.
   closing: {
-    eyebrow: "END",
-    headline: "Run it.",
-    tagline: "Compress a file, then let the system gzip prove it is real.",
+    eyebrow: "§05 · TRY IT",
+    headline: "Try it.",
+    tagline: "Build and run it locally in a few lines — then scan to open the live, in-browser walkthrough.",
     // Illustrative transcript — the output FORMAT is taken verbatim from the
     // source (Main.java:101–103 compress, :143 adler); the specific byte
     // counts / ratio / hash are example values, since the Java engine was not
@@ -473,10 +477,19 @@ export const BUILD = {
       { c: "$ java $VEC -jar target/jetpack-compress.jar adler notes.txt", o: "adler32(vector) 8f2a4c19  notes.txt  (1,048,576 bytes, 16-byte SIMD stride)" },
     ],
     cliNote: "illustrative session — the output format is real (Main.java:101–103, :143); the byte values are an example, not a captured run.",
-    liveLabel: "LIVE LANDING",
+    // Try-It QR card (moved here from the old back cover).
+    qrTarget: "https://jetpack-compress.vercel.app",
+    scanCaption: "scan to open the live app",
+    scanSub: "An interactive, in-browser walkthrough of the engine — the pipeline, the SIMD stage, and the receipts. No JDK required.",
+    liveLabel: "LIVE APP",
     liveUrl: "jetpack-compress.vercel.app",
     repoLabel: "SOURCE",
     repoUrl: "github.com/yadava5/jetpack-compress",
+    steps: [
+      { k: "01", v: "package the jar" },
+      { k: "02", v: "compress a file" },
+      { k: "03", v: "let system gzip verify it" },
+    ],
     microNote: "split · fan out · stitch · verify",
   },
 } as const;
@@ -485,10 +498,14 @@ export const BUILD = {
 // Back cover
 // ---------------------------------------------------------------------------
 
+// Back cover (page 24) — a PURE closing that bookends the front cover. The
+// same full-bleed pipeline field (reseeded + dimmed), a quiet wordmark, the
+// colophon, and one closing line. No QR, no URL, no CTA — the reader was sent
+// to the product on the Try-It page; the last page just closes the book.
 export const BACK_COVER = {
-  qrTarget: "https://jetpack-compress.vercel.app",
-  qrCaption: "scan to open the live landing",
-  repoNote: "Source, tests, and the JMH harness: github.com/yadava5/jetpack-compress",
-  colophon: ["jetpack-compress", "System Card · Vol. 01", "Ayush Yadav · 2026"],
+  wordmark: "jetpack-compress",
+  motif: "one member · every core",
+  colophon: ["System Card · Vol. 01", "Ayush Yadav · 2026", "Output is standard gzip · no warranty"],
   closingLine: "— One member. Every core. Real gzip.",
+  endMark: "fin.",
 } as const;
