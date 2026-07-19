@@ -7,6 +7,7 @@ import '@fontsource-variable/jetbrains-mono'
 import './index.css'
 import './visuals.css'
 import './layout.css'
+import './interactions.css'
 
 import App from './App'
 
