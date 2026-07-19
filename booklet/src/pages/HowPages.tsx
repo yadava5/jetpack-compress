@@ -4,7 +4,7 @@ import { COLORS, FONTS, SECTION_INK } from "../theme";
 import { HOW } from "../content";
 import { PullQuote } from "../primitives/PullQuote";
 import { VThreadFanout, GzipByteLayout } from "../visuals/Signatures";
-import { Body, Lede, StatStrip, SourceRail } from "./_shared";
+import { Body, Lede, StatStrip, Callout, SourceRail } from "./_shared";
 
 type PageProps = { parity: "recto" | "verso"; pageNumber: number; totalPages: number };
 const AMBER = SECTION_INK["02_HOW"];
@@ -18,6 +18,10 @@ export const HowBlocksPage: React.FC<PageProps> = (p) => (
     </div>
     <Body>{HOW.blocks.body}</Body>
     <StatStrip stats={HOW.blocks.stats} accent={AMBER} style={{ marginTop: 10 }} />
+    <Callout label="Peak memory is bounded, not file-sized" accent={AMBER} style={{ marginTop: 16 }}>
+      The in-flight window caps how many compressed-but-unwritten blocks live at once, so a 1 GiB file and a 1 MiB
+      file hold roughly the same peak memory — the scheduler streams, it does not buffer the whole input.
+    </Callout>
     <SourceRail>{HOW.blocks.source}</SourceRail>
   </BodyPage>
 );
@@ -47,6 +51,11 @@ export const HowStitchPage: React.FC<PageProps> = (p) => (
       ))}
     </div>
 
+    <Callout label="The deliberate trade-off" accent={COLORS.COPPER_DEEP} style={{ marginTop: 16 }}>
+      A fresh Deflater per block means no back-references cross a boundary — a small compression-ratio cost near each
+      block edge, in exchange for full parallelism. It is exactly the trade pigz makes, taken on purpose.
+    </Callout>
+
     <SourceRail>{HOW.stitch.source}</SourceRail>
   </BodyPage>
 );
@@ -56,11 +65,36 @@ export const HowCrcPage: React.FC<PageProps> = (p) => (
   <BodyPage {...p} sectionLabel="HOW" sectionColor={AMBER} eyebrow={HOW.crc.eyebrow} headline={HOW.crc.headline}>
     <Lede>{HOW.crc.lede}</Lede>
     <CrcFold />
-    <Body style={{ marginTop: 18 }}>{HOW.crc.body}</Body>
-    <StatStrip stats={HOW.crc.stats} accent={AMBER} style={{ marginTop: 10 }} />
+    <Body style={{ marginTop: 16 }}>{HOW.crc.body}</Body>
+    <CombineSteps />
+    <StatStrip stats={HOW.crc.stats} accent={AMBER} style={{ marginTop: 14 }} />
     <SourceRail>{HOW.crc.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * How Crc32Combine actually works, in three steps — the GF(2) linear-operator
+ * trick spelled out. Text is a plain-language restatement of HOW.crc.body /
+ * the crc32_combine port; nothing invented.
+ */
+const CombineSteps: React.FC = () => {
+  const steps = [
+    { k: "01", t: "CRC-32 is linear over GF(2)", d: "treat the checksum as a bit-vector under mod-2 arithmetic." },
+    { k: "02", t: "appending bytes = a 32×32 multiply", d: "shifting a block's CRC over N zero bytes is one bit-matrix product." },
+    { k: "03", t: "the matrix is built by squaring", d: "repeatedly square the ‘append one zero bit’ operator — no re-scan." },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0, marginTop: 16, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}`, maxWidth: "6.4in" }}>
+      {steps.map((s, i) => (
+        <div key={s.k} style={{ padding: "12px 14px", borderLeft: i === 0 ? "none" : `0.5pt solid ${COLORS.HAIRLINE}`, display: "flex", flexDirection: "column", gap: 5 }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 13, fontWeight: 700, color: AMBER, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{s.k}</span>
+          <span style={{ fontFamily: FONTS.SANS, fontSize: 10, fontWeight: 600, letterSpacing: "-0.01em", color: COLORS.INK, lineHeight: 1.2 }}>{s.t}</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9.5, lineHeight: 1.28, color: COLORS.INK_MUTED }}>{s.d}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 /** A compact "per-block CRCs → combine → whole-input CRC" fold diagram. */
 const CrcFold: React.FC = () => {
@@ -143,9 +177,25 @@ export const HowVThreadsPage: React.FC<PageProps> = (p) => (
 
     <CarrierCeiling />
 
-    <div style={{ marginTop: 18, maxWidth: "6.2in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
+    <div style={{ marginTop: 16, maxWidth: "6.4in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
       <PullQuote color={COLORS.INK}>{HOW.vthreads.pullQuote}</PullQuote>
     </div>
+
+    {/* What the virtual-thread design actually buys — three honest facts. */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0, marginTop: 16, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}`, maxWidth: "6.4in" }}>
+      {[
+        { v: "CPU-bound", k: "the workload", note: "compression, not I/O — so cores are the limit" },
+        { v: "≈ cores", k: "the real ceiling", note: "carriers pin parallelism near the core count" },
+        { v: "no pool", k: "the code", note: "submit · await · fold — structured concurrency" },
+      ].map((x, i) => (
+        <div key={x.k} style={{ padding: "11px 14px", borderLeft: i === 0 ? "none" : `0.5pt solid ${COLORS.HAIRLINE}`, display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 15, fontWeight: 700, color: AMBER, letterSpacing: "-0.01em", lineHeight: 1 }}>{x.v}</span>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: COLORS.INK_MUTED }}>{x.k}</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9.5, lineHeight: 1.25, color: COLORS.INK_SUBTLE }}>{x.note}</span>
+        </div>
+      ))}
+    </div>
+
     <SourceRail>{HOW.vthreads.source}</SourceRail>
   </BodyPage>
 );
