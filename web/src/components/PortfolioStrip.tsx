@@ -1,7 +1,7 @@
 import { PROJECTS, SITE } from '../data/facts'
 import { SectionHead } from './SectionHead'
 import { Reveal } from './Reveal'
-import { GitHubIcon, ArrowUpRight } from './icons'
+import { GitHubIcon, BookIcon, ArrowUpRight } from './icons'
 
 export function PortfolioStrip() {
   return (
@@ -40,6 +40,11 @@ export function PortfolioStrip() {
             <a href={SITE.repo} target="_blank" rel="noreferrer noopener" className="footer-link">
               <GitHubIcon size={14} />
               yadava5/jetpack-compress
+            </a>
+            <span className="footer-sep">·</span>
+            <a href={SITE.systemCard} className="footer-link">
+              <BookIcon size={14} />
+              System Card
             </a>
           </div>
           <p className="footer-note mono">Every metric on this page is measured and reproducible.</p>
