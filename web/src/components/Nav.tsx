@@ -5,9 +5,11 @@ export function Nav() {
   return (
     <header className="nav">
       <div className="wrap nav-inner">
-        <a href="#top" className="nav-brand" aria-label="jetpack-compress home">
+        <a href="#top" className="nav-brand sqz-host" aria-label="jetpack-compress home">
           <BrandGlyph />
-          <span className="mono nav-word">jetpack-compress</span>
+          <span className="mono nav-word">
+            jetpack-<span className="squeeze">compress</span>
+          </span>
           <span className="chip chip-amber nav-jdk">JDK 25</span>
         </a>
 
