@@ -36,7 +36,7 @@ export const EndpaperPage: React.FC<{
         {MASTHEAD.volume}
       </div>
 
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 0.5 }} />
 
       {/* Greeting + abstract */}
       <div style={{ maxWidth: "6.2in" }}>
@@ -68,7 +68,29 @@ export const EndpaperPage: React.FC<{
         </p>
       </div>
 
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 0.42 }} />
+
+      {/* The engine in one line — a quiet pipeline motif that seeds the book. */}
+      <PipelineMotif />
+
+      <div style={{ flex: 0.42 }} />
+
+      {/* Provenance rule — the honesty spine every data page carries. */}
+      <div
+        style={{
+          fontFamily: FONTS.SERIF,
+          fontStyle: "italic",
+          fontSize: 12,
+          lineHeight: 1.4,
+          color: COLORS.INK_MUTED,
+          margin: "0 0 12px",
+          maxWidth: "6.2in",
+          borderLeft: `2px solid ${COLORS.GREEN_DEEP}`,
+          paddingLeft: 12,
+        }}
+      >
+        Every figure in this card traces to a file:line in the repo — the source rails at the foot of each page are the receipts.
+      </div>
 
       {/* Three-fact strip */}
       <div
@@ -116,6 +138,76 @@ export const EndpaperPage: React.FC<{
     </div>
   </Page>
 );
+
+/** The four-stage engine as a quiet inline motif — seeds the book's flow. */
+const PipelineMotif: React.FC = () => {
+  const stages: ReadonlyArray<{ label: string; sub: string; accent: string }> = [
+    { label: "split", sub: "1 MiB blocks", accent: COLORS.STEEL_DEEP },
+    { label: "fan out", sub: "vthread / block", accent: COLORS.AMBER_DEEP },
+    { label: "stitch", sub: "one gzip member", accent: COLORS.AMBER_DEEP },
+    { label: "verify", sub: "real gzip · CRC-32", accent: COLORS.GREEN_DEEP },
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "stretch",
+        gap: 0,
+        border: `0.5pt solid ${COLORS.HAIRLINE}`,
+        borderRadius: 6,
+        background: COLORS.PAPER_WARM,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "0 14px",
+          fontFamily: FONTS.MONO,
+          fontSize: 8.5,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: COLORS.INK_SUBTLE,
+          borderRight: `0.5pt solid ${COLORS.HAIRLINE}`,
+          whiteSpace: "nowrap",
+        }}
+      >
+        bytes in
+      </div>
+      {stages.map((s, i) => (
+        <React.Fragment key={s.label}>
+          {i > 0 && (
+            <div style={{ display: "flex", alignItems: "center", color: COLORS.INK_SUBTLE, fontFamily: FONTS.MONO, fontSize: 12, padding: "0 2px" }}>→</div>
+          )}
+          <div style={{ flex: 1, padding: "11px 12px", display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: s.accent }} />
+              <span style={{ fontFamily: FONTS.MONO, fontSize: 11, fontWeight: 700, letterSpacing: "-0.01em", color: COLORS.INK }}>{s.label}</span>
+            </div>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 7.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED }}>{s.sub}</span>
+          </div>
+        </React.Fragment>
+      ))}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "0 14px",
+          fontFamily: FONTS.MONO,
+          fontSize: 8.5,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: COLORS.GREEN_DEEP,
+          borderLeft: `0.5pt solid ${COLORS.HAIRLINE}`,
+          whiteSpace: "nowrap",
+        }}
+      >
+        .gz out
+      </div>
+    </div>
+  );
+};
 
 const Fact: React.FC<{
   value: string;
