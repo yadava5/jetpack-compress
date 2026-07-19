@@ -196,3 +196,208 @@
   border-color: var(--amber-line);
   background: var(--amber-soft);
 }
+
+/* --- Member ribbon (hero payoff motif) ----------------------------- */
+.ribbon {
+  display: grid;
+  gap: 13px;
+}
+.ribbon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+.ribbon-tape {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ribbon-seg {
+  position: relative;
+  flex-basis: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--color-line);
+}
+.ribbon-seg.meta {
+  background: var(--steel-soft);
+  border-color: var(--steel-line);
+}
+.ribbon-seg.block {
+  background: rgba(255, 158, 44, 0.14);
+  border-color: var(--amber-line);
+}
+.ribbon-seg.final {
+  background: rgba(255, 158, 44, 0.28);
+  border-color: var(--color-amber);
+}
+.ribbon-seg-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 6px;
+}
+.ribbon-seg.meta .ribbon-seg-label {
+  color: var(--color-steel);
+}
+.ribbon-seg.block .ribbon-seg-label,
+.ribbon-seg.final .ribbon-seg-label {
+  color: var(--color-amber);
+}
+.ribbon-scan {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 26%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: ribbon-sweep 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.ribbon-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  color: var(--color-faint);
+}
+.ribbon-foot-sep {
+  color: var(--color-line2);
+}
+.ribbon-foot-tail {
+  color: var(--color-muted);
+  margin-left: 4px;
+}
+@media (max-width: 640px) {
+  .ribbon-seg-label {
+    display: none;
+  }
+  .ribbon-tape {
+    height: 42px;
+  }
+  .ribbon-foot-tail {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@keyframes ribbon-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(440%);
+  }
+}
+
+/* --- Core lanes (problem: one busy, nine idle) --------------------- */
+.cores-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.cores-readout {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.cores-readout .stat-num {
+  font-size: clamp(2.6rem, 7vw, 3.7rem);
+}
+.cores-readout-cap {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-faint);
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.cores-lanes {
+  display: grid;
+  gap: 7px;
+}
+.core-lane {
+  display: grid;
+  grid-template-columns: 32px 1fr 150px;
+  align-items: center;
+  gap: 12px;
+}
+.core-id {
+  font-size: 0.72rem;
+  color: var(--color-faint);
+}
+.core-track {
+  position: relative;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--color-line);
+  overflow: hidden;
+  background: var(--color-ink2);
+}
+.core-lane.on .core-track {
+  border-color: var(--amber-line);
+}
+.core-run {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 158, 44, 0.3), rgba(255, 158, 44, 0.13)),
+    repeating-linear-gradient(90deg, rgba(255, 158, 44, 0.55) 0 10px, transparent 10px 22px);
+  background-size:
+    100% 100%,
+    22px 100%;
+  animation: convey 0.85s linear infinite;
+}
+.core-flat {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(107, 165, 196, 0.07) 0 9px,
+    transparent 9px 18px
+  );
+}
+.core-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-faint);
+  white-space: nowrap;
+  text-align: right;
+}
+.core-lane.on .core-tag {
+  color: var(--color-amber);
+}
+.cores-foot {
+  margin-top: 18px;
+}
+@media (max-width: 560px) {
+  .core-lane {
+    grid-template-columns: 26px 1fr;
+  }
+  .core-tag {
+    display: none;
+  }
+}
+
+@keyframes convey {
+  to {
+    background-position:
+      0 0,
+      22px 0;
+  }
+}
