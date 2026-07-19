@@ -1,5 +1,5 @@
 import { SITE } from '../data/facts'
-import { GitHubIcon } from './icons'
+import { GitHubIcon, BookIcon } from './icons'
 
 export function Nav() {
   return (
@@ -12,17 +12,22 @@ export function Nav() {
         </a>
 
         <nav className="nav-links" aria-label="Sections">
-          <a href="#scope">Scope</a>
-          <a href="#simd">SIMD</a>
-          <a href="#benchmarks">Benchmarks</a>
-          <a href="#architecture">Architecture</a>
-          <a href="#cli">CLI</a>
+          <a href="#problem">Problem</a>
+          <a href="#solution">Solution</a>
+          <a href="#inside">Inside</a>
+          <a href="#proof">Proof</a>
         </nav>
 
-        <a className="btn nav-gh" href={SITE.repo} target="_blank" rel="noreferrer noopener">
-          <GitHubIcon />
-          <span className="nav-gh-label">GitHub</span>
-        </a>
+        <div className="nav-actions">
+          <a className="nav-card" href={SITE.systemCard}>
+            <BookIcon size={14} />
+            <span className="nav-card-label">System Card</span>
+          </a>
+          <a className="btn nav-gh" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+            <GitHubIcon />
+            <span className="nav-gh-label">GitHub</span>
+          </a>
+        </div>
       </div>
     </header>
   )
