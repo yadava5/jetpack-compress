@@ -1,225 +1,282 @@
+import { useEffect, useState } from 'react'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { useInView } from '../hooks/useInView'
 
 /**
- * Visual 1 — the parallel pipeline.
- * Input stream -> split into N blocks -> a virtual thread per block ->
- * stitched (SYNC_FLUSH) into one byte-valid gzip member.
+ * The signature diagram — rebuilt as a clean top-to-bottom flow:
+ *
+ *     input bytes  ─ split ─┐
+ *                           ▼        (one point fans out …)
+ *        [w0] [w1] [w2] [w3] [w4]     five virtual-thread workers
+ *                           ▼        (… and fans back into one point)
+ *                        stitch
+ *                           ▼
+ *     ┌ hdr ┬ 0 ┬ 1 ┬ 2 ┬ 3 ┬ 4·final ┬ crc·isize ┐   one gzip member
+ *
+ * Because the fan-out and fan-in each radiate from a SINGLE node to a row of
+ * evenly-spaced nodes (and back), no connector ever crosses a worker box — the
+ * old overlap is gone by construction. Edges draw themselves in on scroll, bytes
+ * flow along them, and each worker reveals its role on hover. A replay re-runs it;
+ * reduced motion shows the whole thing at rest.
  */
 
 const LANES = 5
+const VB_W = 960
+const VB_H = 660
 
-const VB_W = 920
-const VB_H = 452
+// input
+const CX = VB_W / 2
+const IN_W = 288
+const IN_H = 54
+const IN_X = CX - IN_W / 2
+const IN_Y = 30
+const SPLIT_Y = IN_Y + IN_H + 44 // 128
 
-const INPUT_X = 40
-const INPUT_W = 96
-const INPUT_H = 150
-const CENTER_Y = 156
-const INPUT_Y = CENTER_Y - INPUT_H / 2
-const INPUT_RIGHT = INPUT_X + INPUT_W
+// workers
+const WK_W = 150
+const WK_H = 78
+const WK_TOP = 250
+const WK_BOT = WK_TOP + WK_H
+const STEP = 186
+const workers = Array.from({ length: LANES }, (_, i) => {
+  const cx = CX + (i - (LANES - 1) / 2) * STEP
+  return { i, cx, x: cx - WK_W / 2, last: i === LANES - 1 }
+})
 
-const WORKER_X = 344
-const WORKER_W = 262
-const WORKER_H = 44
-const LANE_TOP = 22
-const LANE_STEP = WORKER_H + 12
+// stitch + output
+const STITCH_Y = 464
+const OUT_X = 34
+const OUT_W = VB_W - OUT_X * 2
+const OUT_Y = 556
+const OUT_H = 56
 
-const STITCH_X = 712
-const STITCH_Y = CENTER_Y
-
-const OUT_X = 40
-const OUT_Y = 372
-const OUT_W = 840
-const OUT_H = 52
-
-type Lane = { i: number; mid: number; last: boolean }
-const lanes: Lane[] = Array.from({ length: LANES }, (_, i) => ({
-  i,
-  mid: LANE_TOP + i * LANE_STEP + WORKER_H / 2,
-  last: i === LANES - 1,
-}))
-
+// output member segments
 type Seg = { k: string; label: string; w: number; kind: 'meta' | 'block' | 'final' }
 const rawSegs: Seg[] = [
-  { k: 'hdr', label: 'hdr', w: 0.85, kind: 'meta' },
-  { k: 'b0', label: '0', w: 1.5, kind: 'block' },
-  { k: 'b1', label: '1', w: 1.5, kind: 'block' },
-  { k: 'b2', label: '2', w: 1.35, kind: 'block' },
-  { k: 'b3', label: '3', w: 1.4, kind: 'block' },
-  { k: 'bf', label: '4 · final', w: 1.5, kind: 'final' },
-  { k: 'tr', label: 'CRC·ISIZE', w: 1.05, kind: 'meta' },
+  { k: 'hdr', label: 'gzip hdr', w: 0.95, kind: 'meta' },
+  { k: 'b0', label: 'block 0', w: 1.5, kind: 'block' },
+  { k: 'b1', label: 'block 1', w: 1.5, kind: 'block' },
+  { k: 'b2', label: 'block 2', w: 1.35, kind: 'block' },
+  { k: 'b3', label: 'block 3', w: 1.4, kind: 'block' },
+  { k: 'bf', label: 'block 4 · final', w: 1.55, kind: 'final' },
+  { k: 'tr', label: 'crc · isize', w: 1.05, kind: 'meta' },
 ]
-
-function segLayout() {
-  const gap = 4
-  const totalW = rawSegs.reduce((s, x) => s + x.w, 0)
+const segs = (() => {
+  const gap = 5
+  const total = rawSegs.reduce((s, x) => s + x.w, 0)
   const usable = OUT_W - gap * (rawSegs.length - 1)
   let x = OUT_X
   return rawSegs.map((s) => {
-    const w = (s.w / totalW) * usable
+    const w = (s.w / total) * usable
     const seg = { ...s, x, w }
     x += w + gap
     return seg
   })
-}
-
-const segs = segLayout()
+})()
 
 function segFill(kind: Seg['kind']) {
-  if (kind === 'meta') return { fill: 'var(--steel-soft)', stroke: 'var(--steel-line)' }
-  if (kind === 'final') return { fill: 'rgba(255,158,44,0.28)', stroke: 'var(--color-amber)' }
-  return { fill: 'rgba(255,158,44,0.15)', stroke: 'var(--amber-line)' }
+  if (kind === 'meta') return { fill: 'var(--steel-soft)', stroke: 'var(--steel-line)', text: 'var(--color-steel)' }
+  if (kind === 'final') return { fill: 'rgba(255,158,44,0.30)', stroke: 'var(--color-amber)', text: 'var(--color-amber)' }
+  return { fill: 'rgba(255,158,44,0.15)', stroke: 'var(--amber-line)', text: 'var(--color-amber)' }
 }
 
+// fan-out edge: one split point -> a worker top
+const fanOut = (cx: number) =>
+  `M ${CX} ${SPLIT_Y + 12} C ${CX} ${SPLIT_Y + 70}, ${cx} ${WK_TOP - 60}, ${cx} ${WK_TOP}`
+// fan-in edge: a worker bottom -> one stitch point
+const fanIn = (cx: number) =>
+  `M ${cx} ${WK_BOT} C ${cx} ${WK_BOT + 60}, ${CX} ${STITCH_Y - 58}, ${CX} ${STITCH_Y - 12}`
+// stitch -> output member (straight down the centre)
+const outLink = `M ${CX} ${STITCH_Y + 12} L ${CX} ${OUT_Y - 4}`
+
 export function PipelineViz() {
-  const anim = !useReducedMotion()
+  const reduced = useReducedMotion()
+  const [ref, inView] = useInView<HTMLDivElement>(0.3)
+  const [runId, setRunId] = useState(0)
+
+  useEffect(() => {
+    if (inView && runId === 0) setRunId(1)
+  }, [inView, runId])
+
+  const playing = runId > 0 && !reduced
 
   return (
-    <svg
-      className="svg-flow"
-      viewBox={`0 0 ${VB_W} ${VB_H}`}
-      role="img"
-      aria-label="Parallel pipeline: input bytes split into blocks, compressed on virtual threads, and stitched into one gzip member."
-    >
-      {/* input byte stack */}
-      <g>
-        <rect
-          x={INPUT_X}
-          y={INPUT_Y}
-          width={INPUT_W}
-          height={INPUT_H}
-          rx={9}
-          fill="var(--color-panel2)"
-          stroke="var(--color-line2)"
-        />
-        {Array.from({ length: 7 }, (_, i) => (
-          <rect
-            key={i}
-            x={INPUT_X + 14}
-            y={INPUT_Y + 16 + i * 18}
-            width={INPUT_W - 28}
-            height={7}
-            rx={2}
-            fill="rgba(255,255,255,0.09)"
-          />
-        ))}
-        <text x={INPUT_X + INPUT_W / 2} y={INPUT_Y - 14} textAnchor="middle" fontSize="13" className="svg-txt">
-          input bytes
-        </text>
-        <text x={INPUT_X + INPUT_W / 2} y={INPUT_Y + INPUT_H + 24} textAnchor="middle" fontSize="11" className="svg-txt-faint">
-          FFM mmap
-        </text>
-      </g>
-
-      {/* fan-out: input -> workers */}
-      {lanes.map((l) => (
-        <path
-          key={`fan-${l.i}`}
-          className={anim ? 'flow-line steel' : 'flow-line steel'}
-          style={anim ? { animationDelay: `${l.i * -0.18}s` } : { animation: 'none' }}
-          d={`M ${INPUT_RIGHT} ${CENTER_Y} C ${INPUT_RIGHT + 90} ${CENTER_Y}, ${WORKER_X - 90} ${l.mid}, ${WORKER_X} ${l.mid}`}
-        />
-      ))}
-
-      {/* split marker */}
-      <text x={INPUT_RIGHT + 150} y={22} textAnchor="middle" fontSize="11" className="svg-txt-faint">
-        split · 1 MiB blocks
-      </text>
-
-      {/* workers (one virtual thread per block) */}
-      {lanes.map((l) => {
-        const top = l.mid - WORKER_H / 2
-        return (
-          <g key={`w-${l.i}`}>
-            <rect
-              x={WORKER_X}
-              y={top}
-              width={WORKER_W}
-              height={WORKER_H}
-              rx={9}
-              fill="var(--color-panel)"
-              stroke={l.last ? 'var(--amber-line)' : 'var(--color-line2)'}
+    <div className="pipe-wrap" ref={ref}>
+      {!reduced && (
+        <button
+          type="button"
+          className="pipe-replay mono"
+          onClick={() => setRunId((n) => n + 1)}
+          aria-label="Replay the pipeline animation"
+        >
+          <ReplayIcon />
+          replay
+        </button>
+      )}
+      <svg
+        key={runId}
+        className={`svg-flow pipe-flow ${playing ? 'play' : ''}`}
+        viewBox={`0 0 ${VB_W} ${VB_H}`}
+        role="img"
+        aria-label="Parallel pipeline: input bytes are split, compressed on five virtual-thread workers, and stitched into one byte-valid gzip member."
+      >
+        {/* ---- edges (drawn behind the nodes) ---- */}
+        <g className="pipe-edges">
+          {workers.map((wk) => (
+            <path
+              key={`fo-${wk.i}`}
+              className="pipe-edge steel"
+              pathLength={1}
+              style={{ ['--d' as string]: `${wk.i * 90}ms` }}
+              d={fanOut(wk.cx)}
             />
-            {/* vthread marker */}
-            <circle cx={WORKER_X + 18} cy={l.mid} r={4} fill={l.last ? 'var(--color-amber)' : 'var(--color-steel)'} />
-            <text x={WORKER_X + 32} y={l.mid - 3} fontSize="12.5" className="svg-txt" fill="var(--color-fg)">
-              vthread · blk {l.i}
+          ))}
+          {workers.map((wk) => (
+            <path
+              key={`fi-${wk.i}`}
+              className="pipe-edge warm"
+              pathLength={1}
+              style={{ ['--d' as string]: `${520 + wk.i * 90}ms` }}
+              d={fanIn(wk.cx)}
+            />
+          ))}
+          <path
+            className="pipe-edge warm"
+            pathLength={1}
+            style={{ ['--d' as string]: '1020ms', strokeWidth: 2.4 }}
+            d={outLink}
+          />
+        </g>
+
+        {/* ---- flowing bytes ---- */}
+        {playing && (
+          <g className="pipe-packets" aria-hidden="true">
+            {workers.map((wk) => (
+              <rect
+                key={`po-${wk.i}`}
+                className="pipe-packet steel"
+                width={7}
+                height={7}
+                rx={1.5}
+                style={{ offsetPath: `path("${fanOut(wk.cx)}")`, animationDelay: `${0.3 + wk.i * 0.22}s` }}
+              />
+            ))}
+            {workers.map((wk) => (
+              <rect
+                key={`pi-${wk.i}`}
+                className="pipe-packet amber"
+                width={7}
+                height={7}
+                rx={1.5}
+                style={{ offsetPath: `path("${fanIn(wk.cx)}")`, animationDelay: `${1.0 + wk.i * 0.16}s` }}
+              />
+            ))}
+            <rect
+              className="pipe-packet amber bright"
+              width={9}
+              height={9}
+              rx={2}
+              style={{ offsetPath: `path("${outLink}")`, animationDelay: '1.7s' }}
+            />
+          </g>
+        )}
+
+        {/* ---- input bytes ---- */}
+        <g className="pipe-node">
+          <rect x={IN_X} y={IN_Y} width={IN_W} height={IN_H} rx={11} fill="var(--color-panel2)" stroke="var(--color-line2)" />
+          {Array.from({ length: 9 }, (_, i) => (
+            <rect key={i} x={IN_X + 18 + i * 28} y={IN_Y + 15} width={14} height={IN_H - 30} rx={2} fill="rgba(255,255,255,0.08)" />
+          ))}
+          <text x={CX} y={IN_Y - 11} textAnchor="middle" fontSize="13" className="svg-txt">input bytes</text>
+          <text x={IN_X + IN_W + 12} y={IN_Y + IN_H / 2 + 4} fontSize="10.5" className="svg-txt-faint">FFM mmap · one Arena</text>
+        </g>
+
+        {/* ---- split node ---- */}
+        <g className="pipe-node">
+          <circle cx={CX} cy={SPLIT_Y} r={7} fill="var(--steel-soft)" stroke="var(--color-steel)" />
+          <text x={CX + 16} y={SPLIT_Y + 4} fontSize="11" className="svg-txt-faint">split · 1 MiB blocks</text>
+        </g>
+
+        {/* ---- workers ---- */}
+        {workers.map((wk) => (
+          <g className="pipe-worker" key={`w-${wk.i}`} tabIndex={0}>
+            <title>{`virtual thread · block ${wk.i} — ${wk.last ? 'Deflater.finish(), BFINAL=1' : 'Deflater SYNC_FLUSH, BFINAL=0'}`}</title>
+            <rect
+              className="worker-box"
+              x={wk.x}
+              y={WK_TOP}
+              width={WK_W}
+              height={WK_H}
+              rx={11}
+              fill="var(--color-panel)"
+              stroke={wk.last ? 'var(--amber-line)' : 'var(--color-line2)'}
+            />
+            <circle cx={wk.x + 18} cy={WK_TOP + 20} r={4} fill={wk.last ? 'var(--color-amber)' : 'var(--color-steel)'} />
+            <text x={wk.x + 30} y={WK_TOP + 24} fontSize="12" className="svg-txt" fill="var(--color-fg)">vthread {wk.i}</text>
+            <text x={wk.x + 14} y={WK_TOP + 44} fontSize="9.5" className="svg-txt-faint">blk {wk.i} · DEFLATE</text>
+            <text x={wk.x + 14} y={WK_TOP + 60} fontSize="8.5" className="svg-txt-faint">
+              {wk.last ? 'finish() BFINAL=1' : 'SYNC_FLUSH B=0'}
             </text>
-            <text x={WORKER_X + 32} y={l.mid + 12} fontSize="9.5" className="svg-txt-faint">
-              {l.last ? 'Deflater.finish() · BFINAL=1' : 'Deflater · SYNC_FLUSH · BFINAL=0'}
-            </text>
-            {/* compressing activity */}
+            {/* compressing ticks */}
             {Array.from({ length: 3 }, (_, j) => (
               <rect
                 key={j}
-                className={anim ? 'worker-fill' : undefined}
-                style={anim ? { animationDelay: `${l.i * 0.12 + j * 0.18}s` } : { opacity: 0.7 }}
-                x={WORKER_X + WORKER_W - 40 + j * 10}
-                y={l.mid - 8}
-                width={6}
-                height={16}
-                rx={1.5}
-                fill={l.last ? 'var(--color-amber)' : 'var(--color-steel)'}
+                className={playing ? 'worker-tick' : undefined}
+                style={playing ? { animationDelay: `${wk.i * 0.1 + j * 0.16}s` } : { opacity: 0.55 }}
+                x={wk.x + WK_W - 34 + j * 8}
+                y={WK_TOP + 15}
+                width={4.5}
+                height={12}
+                rx={1}
+                fill={wk.last ? 'var(--color-amber)' : 'var(--color-steel)'}
               />
             ))}
           </g>
-        )
-      })}
+        ))}
 
-      {/* converge: workers -> stitch node */}
-      {lanes.map((l) => (
-        <path
-          key={`cv-${l.i}`}
-          className="flow-line warm"
-          style={anim ? { animationDelay: `${l.i * -0.14}s` } : { animation: 'none' }}
-          d={`M ${WORKER_X + WORKER_W} ${l.mid} C ${WORKER_X + WORKER_W + 70} ${l.mid}, ${STITCH_X - 70} ${STITCH_Y}, ${STITCH_X} ${STITCH_Y}`}
-        />
-      ))}
+        {/* ---- stitch node ---- */}
+        <g className="pipe-node">
+          <circle cx={CX} cy={STITCH_Y} r={11} fill="var(--amber-soft)" stroke="var(--color-amber)" />
+          <circle cx={CX} cy={STITCH_Y} r={3.5} fill="var(--color-amber)" />
+          <text x={CX + 22} y={STITCH_Y - 3} fontSize="12.5" className="svg-txt" fill="var(--color-fg)">stitch</text>
+          <text x={CX + 22} y={STITCH_Y + 13} fontSize="9.5" className="svg-txt-faint">SYNC_FLUSH · fold CRC</text>
+        </g>
 
-      {/* stitch node */}
-      <circle cx={STITCH_X} cy={STITCH_Y} r={9} fill="var(--amber-soft)" stroke="var(--color-amber)" />
-      <circle cx={STITCH_X} cy={STITCH_Y} r={3} fill="var(--color-amber)" />
-      <text x={STITCH_X + 18} y={STITCH_Y - 8} fontSize="12.5" className="svg-txt" fill="var(--color-fg)">
-        stitch
-      </text>
-      <text x={STITCH_X + 18} y={STITCH_Y + 8} fontSize="9.5" className="svg-txt-faint">
-        combine CRC
-      </text>
+        {/* ---- output: one valid single-member gzip stream ---- */}
+        <g>
+          <text x={OUT_X} y={OUT_Y - 12} fontSize="12.5" className="svg-txt" fill="var(--color-fg)">one valid single-member gzip stream</text>
+          {segs.map((s) => {
+            const c = segFill(s.kind)
+            return (
+              <g key={s.k} className="pipe-seg">
+                <rect x={s.x} y={OUT_Y} width={s.w} height={OUT_H} rx={6} fill={c.fill} stroke={c.stroke} />
+                <text
+                  x={s.x + s.w / 2}
+                  y={OUT_Y + OUT_H / 2 + 4}
+                  textAnchor="middle"
+                  fontSize={s.w < 78 ? 9 : 10.5}
+                  className="svg-txt"
+                  fill={c.text}
+                >
+                  {s.label}
+                </text>
+              </g>
+            )
+          })}
+          <text x={OUT_X + OUT_W} y={OUT_Y + OUT_H + 22} textAnchor="end" fontSize="11" className="svg-txt-faint">
+            decompresses with gzip -d · zcat · GZIPInputStream
+          </text>
+        </g>
+      </svg>
+    </div>
+  )
+}
 
-      {/* stitch -> single output member */}
-      <path
-        className="flow-line warm"
-        style={{ strokeWidth: 2.2, animationDelay: '-0.4s', ...(anim ? {} : { animation: 'none' }) }}
-        d={`M ${STITCH_X} ${STITCH_Y + 10} C ${STITCH_X} 300, 120 300, 80 ${OUT_Y}`}
-      />
-
-      {/* output: one valid single-member gzip stream */}
-      <g>
-        {segs.map((s) => {
-          const c = segFill(s.kind)
-          return (
-            <g key={s.k} className="pipe-seg">
-              <rect x={s.x} y={OUT_Y} width={s.w} height={OUT_H} rx={5} fill={c.fill} stroke={c.stroke} />
-              <text
-                x={s.x + s.w / 2}
-                y={OUT_Y + OUT_H / 2 + 4}
-                textAnchor="middle"
-                fontSize={s.w < 70 ? 9 : 11}
-                className="svg-txt"
-                fill={s.kind === 'meta' ? 'var(--color-steel)' : 'var(--color-amber)'}
-              >
-                {s.label}
-              </text>
-            </g>
-          )
-        })}
-        <text x={OUT_X} y={OUT_Y - 14} fontSize="12.5" className="svg-txt" fill="var(--color-fg)">
-          one valid single-member gzip stream
-        </text>
-        <text x={OUT_X + OUT_W} y={OUT_Y + OUT_H + 22} textAnchor="end" fontSize="11" className="svg-txt-faint">
-          decompresses with gzip -d · GZIPInputStream
-        </text>
-      </g>
+function ReplayIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
+      <path d="M11.5 3.5A5 5 0 1 0 12 7" strokeLinecap="round" />
+      <path d="M11.5 1.5v2.6H8.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
