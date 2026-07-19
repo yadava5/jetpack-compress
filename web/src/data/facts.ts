@@ -13,6 +13,8 @@ export const SITE = {
   name: 'jetpack-compress',
   tagline: 'Parallel, gzip-compatible compression on JDK 25.',
   repo: 'https://github.com/yadava5/jetpack-compress',
+  /** The System Card booklet, built as a static sub-site served from this same origin. */
+  systemCard: '/system-card/',
   jdk: 'JDK 25',
   oneLiner:
     'A high-throughput, gzip-compatible parallel compression engine. Input is split into blocks, DEFLATE-compressed concurrently on virtual threads, and stitched into a single, byte-valid gzip member that any tool decompresses.',
@@ -233,6 +235,38 @@ export const CLI = {
     { name: 'info', args: '' },
   ],
 } as const
+
+/**
+ * ------------------------------------------------------------------ *
+ * NARRATIVE — the storytelling spine that threads the page.
+ * Copy only; every number it cites is derived from the verified
+ * benchmarks above (10 cores + 66.8 MB/s single-thread from BENCH_META
+ * and COMPRESSION_BENCH). No new claims are introduced here.
+ * ------------------------------------------------------------------ */
+
+/** The five acts, in order. Labels drive the chaptered section heads. */
+export const ACTS = {
+  problem: { n: '01', label: 'The problem' },
+  solution: { n: '02', label: 'The idea' },
+  inside: { n: '03', label: 'Inside the engine' },
+  proof: { n: '04', label: 'The proof' },
+  tryit: { n: '05', label: 'Run it yourself' },
+} as const
+
+/** PROBLEM — one core busy, the rest idle. Numbers are this machine's, stated as such. */
+export const PROBLEM = {
+  cores: 10, // Apple M1 Pro (arm64) · 10 cores — see BENCH_META.machine
+  active: 1, // a single-threaded DEFLATE loop occupies one
+  idle: 9,
+  singleMbps: COMPRESSION_BENCH.bars[0].mbps, // 66.8 MB/s single-thread baseline
+  activeLabel: 'gzip · one DEFLATE loop',
+  idleLabel: 'idle',
+} as const
+
+/** The two invariants that make "still real gzip" true — pulled forward into the solution. */
+export const SOLUTION_INVARIANTS = [ARCH_NOTES[0], ARCH_NOTES[1]] as const
+/** The two honest caveats that keep the parallelism correct — shown inside the engine. */
+export const INSIDE_NOTES = [ARCH_NOTES[2], ARCH_NOTES[3]] as const
 
 /** The portfolio strip — the interconnection across the live projects. */
 export const PROJECTS = [
