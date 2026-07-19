@@ -17,7 +17,23 @@ export const InsideSimdPage: React.FC<PageProps> = (p) => (
     </div>
     <Body>{INSIDE.simd.body}</Body>
     <StatStrip stats={INSIDE.simd.stats} accent={COPPER} style={{ marginTop: 10 }} />
-    <p style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 11.5, lineHeight: 1.35, color: COLORS.INK_MUTED, margin: "10px 0 0", maxWidth: "6.4in" }}>
+
+    {/* The order-free decomposition that makes Adler-32 vectorizable. */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, marginTop: 14, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}`, maxWidth: "6.4in" }}>
+      {[
+        { m: "S1 = Σ bᵢ", k: "plain sum", note: "every byte, order-free" },
+        { m: "S2 = Σ i·bᵢ", k: "position-weighted", note: "the lane index carries the weight" },
+        { m: "→ A, B exact", k: "reconstruct", note: "bit-identical to the serial form" },
+      ].map((x, i) => (
+        <div key={x.k} style={{ padding: "11px 14px", borderLeft: i === 0 ? "none" : `0.5pt solid ${COLORS.HAIRLINE}`, display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 13, fontWeight: 700, color: COPPER, lineHeight: 1 }}>{x.m}</span>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: COLORS.INK_MUTED }}>{x.k}</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9.5, lineHeight: 1.25, color: COLORS.INK_SUBTLE }}>{x.note}</span>
+        </div>
+      ))}
+    </div>
+
+    <p style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 11.5, lineHeight: 1.35, color: COLORS.INK_MUTED, margin: "14px 0 0", maxWidth: "6.4in" }}>
       {INSIDE.simd.honestNote}
     </p>
     <SourceRail>{INSIDE.simd.source}</SourceRail>
@@ -59,6 +75,12 @@ export const InsideFfmPage: React.FC<PageProps> = (p) => (
     </div>
 
     <MappedSlab />
+
+    <Callout label="the two newest APIs, in one command" accent={COPPER} style={{ marginTop: 16 }}>
+      <code style={{ fontFamily: FONTS.MONO, fontSize: 10 }}>jetpack adler &lt;file&gt;</code> memory-maps the input with FFM and runs the
+      vectorized Adler-32 straight over the MemorySegment — SIMD reading vectors out of mapped memory, with no
+      intermediate copy onto the Java heap.
+    </Callout>
 
     <SourceRail>{INSIDE.ffm.source}</SourceRail>
   </BodyPage>
@@ -147,8 +169,8 @@ export const InsideDelegatedPage: React.FC<PageProps> = (p) => (
               display: "grid",
               gridTemplateColumns: "1.5in 1fr 1.05in",
               columnGap: 14,
-              alignItems: "center",
-              padding: "10px 0",
+              alignItems: "start",
+              padding: "11px 0",
               borderBottom: `0.5pt solid ${COLORS.HAIRLINE}`,
             }}
           >
@@ -156,7 +178,10 @@ export const InsideDelegatedPage: React.FC<PageProps> = (p) => (
               <div style={{ fontFamily: FONTS.SANS, fontSize: 12.5, fontWeight: 600, color: COLORS.INK, letterSpacing: "-0.01em" }}>{f.label}</div>
               <div style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_SUBTLE, marginTop: 1 }}>{f.module}</div>
             </div>
-            <div style={{ fontFamily: FONTS.MONO, fontSize: 9, color: COLORS.STEEL_DEEP }}>{f.where}</div>
+            <div>
+              <div style={{ fontFamily: FONTS.MONO, fontSize: 9, color: COLORS.STEEL_DEEP }}>{f.where}</div>
+              <div style={{ fontFamily: FONTS.SANS, fontSize: 9.5, lineHeight: 1.35, color: COLORS.INK_MUTED, marginTop: 4 }}>{f.blurb}</div>
+            </div>
             <div
               style={{
                 justifySelf: "end",
