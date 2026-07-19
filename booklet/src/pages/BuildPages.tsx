@@ -37,10 +37,58 @@ export const BuildStackPage: React.FC<PageProps> = (p) => (
       ))}
     </div>
 
-    <Body style={{ margin: "20px 0 0" }}>{BUILD.stack.closing}</Body>
+    <Body style={{ margin: "18px 0 0" }}>{BUILD.stack.closing}</Body>
+
+    <EngineModuleMap />
+
     <SourceRail>{BUILD.stack.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * The engine as an architecture strip: the thin CLI, the four hand-written
+ * classes named in BUILD.stack.closing, and the zlib codec they wrap. Colors
+ * follow the book's hand-written (amber) vs delegated (steel) language.
+ */
+const EngineModuleMap: React.FC = () => {
+  const classes = [
+    { n: "ParallelGzipCompressor", r: "block scheduler" },
+    { n: "Crc32Combine", r: "GF(2) parallel CRC" },
+    { n: "VectorizedAdler32", r: "hand-vectorized SIMD" },
+    { n: "MappedInput", r: "FFM mmap I/O" },
+  ];
+  return (
+    <div style={{ marginTop: 18, maxWidth: "6.4in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: SLATE }}>
+          the engine · four classes, wrapped around zlib
+        </span>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_SUBTLE }}>■ hand-written&nbsp;&nbsp;■ delegated</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "0.85in 1fr 0.95in", columnGap: 12, alignItems: "stretch" }}>
+        {/* CLI */}
+        <div style={{ border: `0.5pt solid ${COLORS.HAIRLINE}`, borderRadius: 5, background: COLORS.PAPER_ELEVATED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "8px 6px" }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 10, fontWeight: 700, color: COLORS.INK }}>CLI</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 8.5, color: COLORS.INK_MUTED, textAlign: "center" }}>Main.java</span>
+        </div>
+        {/* Four hand-written classes */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {classes.map((c) => (
+            <div key={c.n} style={{ border: `0.5pt solid ${COLORS.HAIRLINE}`, borderLeft: `2.5px solid ${COLORS.AMBER_DEEP}`, borderRadius: 4, background: COLORS.PAPER_ELEVATED, padding: "8px 10px" }}>
+              <div style={{ fontFamily: FONTS.MONO, fontSize: 9, fontWeight: 700, color: COLORS.INK, lineHeight: 1.15 }}>{c.n}</div>
+              <div style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9, color: COLORS.INK_MUTED, marginTop: 2 }}>{c.r}</div>
+            </div>
+          ))}
+        </div>
+        {/* zlib */}
+        <div style={{ border: `0.5pt solid ${COLORS.STEEL_DEEP}`, borderRadius: 5, background: COLORS.STEEL_TINT, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "8px 6px" }}>
+          <span style={{ fontFamily: FONTS.MONO, fontSize: 10, fontWeight: 700, color: COLORS.STEEL_DEEP }}>zlib</span>
+          <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 8.5, color: COLORS.INK_MUTED, textAlign: "center" }}>Deflater · the codec</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /**
  * Page 23 — the Try-It page (second-to-last recto). Two moves on one recto:
@@ -120,6 +168,25 @@ export const BuildClosingPage: React.FC<PageProps> = (p) => (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 18 }}>
       <LinkChip label={BUILD.closing.liveLabel} url={BUILD.closing.liveUrl} accent={COLORS.AMBER_DEEP} />
       <LinkChip label={BUILD.closing.repoLabel} url={BUILD.closing.repoUrl} accent={COLORS.STEEL_DEEP} />
+    </div>
+
+    {/* What the live walkthrough covers — mirrors the three chapters worth seeing move. */}
+    <div style={{ marginTop: 18, borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 12 }}>
+      <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: SLATE, marginBottom: 10 }}>
+        inside the live walkthrough
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 18 }}>
+        {[
+          { k: "the pipeline", v: "watch a file split, fan out on virtual threads, and stitch into one member." },
+          { k: "the SIMD stage", v: "scalar vs vector Adler-32, animated — the 2.8× as it happens." },
+          { k: "the receipts", v: "the benchmarks and the 72 green tests, live in the browser." },
+        ].map((s) => (
+          <div key={s.k} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.02em", color: COLORS.INK }}>{s.k}</span>
+            <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10.5, lineHeight: 1.3, color: COLORS.INK_MUTED }}>{s.v}</span>
+          </div>
+        ))}
+      </div>
     </div>
 
     <div style={{ position: "absolute", left: "0.75in", bottom: "1.0in", fontFamily: FONTS.MONO, fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: COLORS.INK_SUBTLE }}>
