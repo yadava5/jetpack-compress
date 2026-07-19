@@ -32,62 +32,143 @@ const Hero: React.FC<{ value: string; label: string; color: string }> = ({ value
   </div>
 );
 
-type BarRow = { label: string; valueLabel: string; frac: number; mult: string; role: "baseline" | "hero" | "reference"; errorFrac?: [number, number] };
+const monoP = "ui-monospace, 'SF Mono', Menlo, monospace";
 
-const BarChart: React.FC<{ rows: BarRow[] }> = ({ rows }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: "6.4in" }}>
-    {rows.map((r) => {
-      const color = r.role === "baseline" ? COLORS.STEEL_DEEP : r.role === "hero" ? COLORS.AMBER_DEEP : COLORS.SLATE;
-      return (
-        <div key={r.label}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-            <span style={{ fontFamily: FONTS.MONO, fontSize: 9.5, color: COLORS.INK }}>{r.label}</span>
-            <span style={{ fontFamily: FONTS.MONO, fontSize: 9, color: COLORS.INK_MUTED, fontVariantNumeric: "tabular-nums" }}>
-              {r.valueLabel} · {r.mult}
-            </span>
-          </div>
-          <div style={{ position: "relative", height: 24, borderRadius: 4, background: COLORS.SURFACE, overflow: "visible" }}>
-            <div
-              style={{
-                position: "absolute",
-                inset: "0 auto 0 0",
-                width: `${r.frac * 100}%`,
-                borderRadius: 4,
-                background: r.role === "reference" ? "transparent" : color,
-                opacity: r.role === "hero" ? 0.92 : 0.7,
-                border: r.role === "reference" ? `1px dashed ${COLORS.SLATE_DEEP}` : "none",
-                backgroundImage:
-                  r.role === "reference"
-                    ? `repeating-linear-gradient(45deg, ${COLORS.HAIRLINE} 0, ${COLORS.HAIRLINE} 4px, transparent 4px, transparent 9px)`
-                    : "none",
-              }}
-            />
-            {r.errorFrac && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: `${r.errorFrac[0] * 100}%`,
-                  width: `${(r.errorFrac[1] - r.errorFrac[0]) * 100}%`,
-                  height: 2,
-                  transform: "translateY(-50%)",
-                  background: COLORS.INK,
-                  opacity: 0.55,
-                }}
-              >
-                <span style={{ position: "absolute", left: 0, top: -5, width: 2, height: 12, background: COLORS.INK, opacity: 0.55 }} />
-                <span style={{ position: "absolute", right: 0, top: -5, width: 2, height: 12, background: COLORS.INK, opacity: 0.55 }} />
-              </div>
-            )}
-          </div>
-          {r.role === "reference" && (
-            <div style={{ fontFamily: FONTS.MONO, fontSize: 7.5, color: COLORS.INK_SUBTLE, marginTop: 2 }}>native intrinsic — a reference point, not a target that was beaten</div>
-          )}
+type LolliRow = { label: string; value: number; valueLabel: string; mult: string; role: "baseline" | "hero" | "reference" };
+
+/**
+ * Lollipop / dot plot — the three Adler-32 throughputs as stems + dots on one
+ * GB/s axis. Scalar (steel) and vector (amber, the hero) are the honest
+ * comparison; the JDK native intrinsic (slate, hollow) is a dashed reference
+ * dot, not a beaten target. Reads off the bar-chart idiom entirely.
+ */
+const Lollipop: React.FC<{ rows: LolliRow[]; max: number }> = ({ rows, max }) => {
+  const X0 = 8;
+  const X1 = 560;
+  const x = (v: number) => X0 + (v / max) * (X1 - X0);
+  const rowY = (i: number) => 34 + i * 52;
+  const ticks = [0, 3, 6, 9, 12, 15];
+  const axisY = rowY(rows.length - 1) + 30;
+  return (
+    <div style={{ maxWidth: "6.4in" }}>
+      <svg viewBox={`0 0 600 ${axisY + 22}`} width="100%" style={{ display: "block", overflow: "visible" }}>
+        {rows.map((r, i) => {
+          const color = r.role === "baseline" ? COLORS.STEEL_DEEP : r.role === "hero" ? COLORS.AMBER_DEEP : COLORS.SLATE_DEEP;
+          const y = rowY(i);
+          const ref = r.role === "reference";
+          return (
+            <g key={r.label}>
+              {/* header line: label left, value·mult right */}
+              <text x={X0} y={y - 12} fontFamily={monoP} fontSize={9.5} fontWeight={r.role === "hero" ? 700 : 500} fill={COLORS.INK}>{r.label}</text>
+              <text x={X1} y={y - 12} textAnchor="end" fontFamily={monoP} fontSize={9} fill={COLORS.INK_MUTED} style={{ fontVariantNumeric: "tabular-nums" }}>{`${r.valueLabel} · ${r.mult}`}</text>
+              {/* stem */}
+              <line x1={X0} y1={y} x2={x(r.value)} y2={y} stroke={color} strokeOpacity={ref ? 0.4 : 0.8} strokeWidth={ref ? 1.4 : 3} strokeLinecap="round" strokeDasharray={ref ? "3 3" : undefined} />
+              {/* dot */}
+              <circle cx={x(r.value)} cy={y} r={r.role === "hero" ? 8 : 6.5} fill={ref ? COLORS.PAPER : color} stroke={color} strokeWidth={ref ? 1.6 : 1.2} strokeDasharray={ref ? "2.5 2" : undefined} />
+              {r.role === "hero" && (
+                <>
+                  <rect x={x(r.value) + 14} y={y - 10} width={116} height={20} rx={10} fill={COLORS.AMBER_TINT} stroke={COLORS.AMBER_DEEP} strokeWidth={0.8} />
+                  <text x={x(r.value) + 72} y={y + 4} textAnchor="middle" fontFamily={monoP} fontSize={9} fontWeight={700} fill={COLORS.AMBER_DEEP}>▲ 2.8× vs scalar</text>
+                </>
+              )}
+              {ref && (
+                <text x={X0} y={y + 18} fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE}>native intrinsic — a reference point, not a target that was beaten</text>
+              )}
+            </g>
+          );
+        })}
+        {/* axis */}
+        <line x1={X0} y1={axisY} x2={X1} y2={axisY} stroke={COLORS.HAIRLINE} strokeWidth={0.6} />
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={x(t)} y1={axisY} x2={x(t)} y2={axisY + 4} stroke={COLORS.HAIRLINE_STRONG} strokeWidth={0.6} />
+            <text x={x(t)} y={axisY + 14} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE} style={{ fontVariantNumeric: "tabular-nums" }}>{t}</text>
+          </g>
+        ))}
+        <text x={X1} y={axisY - 5} textAnchor="end" fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE}>GB/s</text>
+      </svg>
+    </div>
+  );
+};
+
+/**
+ * Radial gauge — the parallel multiple as a speedometer. The needle reads the
+ * measured ~6.5×; the translucent arc band spans the honest ±50% quick-run
+ * error (3.25× → 9.75×). A distinct form from the SIMD-page lollipop, and it
+ * carries its own error bar visibly.
+ */
+const SpeedGauge: React.FC = () => {
+  const cx = 300;
+  const cy = 196;
+  const R = 150;
+  const MAX = 10;
+  const value = 6.5;
+  const errLo = value * 0.5;
+  const errHi = value * 1.5;
+  // value fraction → point on the top semicircle (y grows down)
+  const pt = (t: number, r: number) => {
+    const phi = (Math.PI * (1 - t)); // t=0 → π (left), t=1 → 0 (right)
+    return [cx + r * Math.cos(phi), cy - r * Math.sin(phi)] as const;
+  };
+  const arc = (t1: number, t2: number, r: number) => {
+    const [x1, y1] = pt(t1, r);
+    const [x2, y2] = pt(t2, r);
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  const ticks = [0, 2, 4, 6, 8, 10];
+  const [nx, ny] = pt(value / MAX, R - 34);
+  return (
+    <div style={{ maxWidth: "6.4in" }}>
+      <svg viewBox="0 0 600 236" width="100%" style={{ display: "block", overflow: "visible" }}>
+        {/* full track */}
+        <path d={arc(0, 1, R)} fill="none" stroke={COLORS.SURFACE} strokeWidth={9} strokeLinecap="round" />
+        {/* ±50% error band */}
+        <path d={arc(errLo / MAX, errHi / MAX, R)} fill="none" stroke={COLORS.AMBER} strokeOpacity={0.22} strokeWidth={17} />
+        {/* value arc 0 → 6.5 */}
+        <path d={arc(0, value / MAX, R)} fill="none" stroke={COLORS.AMBER_DEEP} strokeWidth={9} strokeLinecap="round" />
+        {/* baseline 1× notch */}
+        {(() => { const [bx, by] = pt(1 / MAX, R + 6); const [bx2, by2] = pt(1 / MAX, R - 9); return (
+          <>
+            <line x1={bx2} y1={by2} x2={bx} y2={by} stroke={COLORS.STEEL_DEEP} strokeWidth={1.4} />
+            <text x={bx - 2} y={by + 12} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.STEEL_DEEP}>1× floor</text>
+          </>
+        ); })()}
+        {/* ticks */}
+        {ticks.map((t) => {
+          const [ox, oy] = pt(t / MAX, R + 4);
+          const [ix, iy] = pt(t / MAX, R - 5);
+          const [lx, ly] = pt(t / MAX, R + 17);
+          const anchor = t === 0 ? "start" : t === MAX ? "end" : "middle";
+          return (
+            <g key={t}>
+              <line x1={ix} y1={iy} x2={ox} y2={oy} stroke={COLORS.HAIRLINE_STRONG} strokeWidth={0.7} />
+              <text x={lx} y={ly + 3} textAnchor={anchor} fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE} style={{ fontVariantNumeric: "tabular-nums" }}>{`${t}×`}</text>
+            </g>
+          );
+        })}
+        {/* needle + hub — the needle reads ~6.5× (Hero + chips carry the number) */}
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={COLORS.INK} strokeWidth={2.4} strokeLinecap="round" />
+        <circle cx={cx} cy={cy} r={6} fill={COLORS.INK} />
+        <circle cx={cx} cy={cy} r={2.4} fill={COLORS.PAPER} />
+        {/* band legend */}
+        <text x={cx} y={cy + 26} textAnchor="middle" fontFamily={monoP} fontSize={8} fill={COLORS.INK_MUTED}>
+          shaded band = ±50% quick-run error (3.25× – 9.75×)
+        </text>
+      </svg>
+      {/* underlying throughputs */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, marginTop: 6, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}` }}>
+        <div style={{ padding: "10px 16px 10px 0" }}>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.STEEL_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>66.8 MB/s</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 4 }}>singleThreadedJdk · 1.0×</div>
         </div>
-      );
-    })}
-  </div>
-);
+        <div style={{ padding: "10px 0 10px 16px", borderLeft: `0.5pt solid ${COLORS.HAIRLINE}` }}>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>434.6 MB/s</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 4 }}>parallelVirtualThreads · ~6.5× · 10 cores</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const BenchMeta: React.FC = () => (
   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", fontFamily: FONTS.MONO, fontSize: 7.8, color: COLORS.INK_MUTED }}>
@@ -99,13 +180,13 @@ const BenchMeta: React.FC = () => (
 
 // ── pages ───────────────────────────────────────────────────────────────────
 
-/** Page 18 — 2.8× vector over scalar. */
+/** Page 18 — 2.8× vector over scalar (lollipop). */
 export const ProofSimdPage: React.FC<PageProps> = (p) => {
   const max = 15;
-  const rows: BarRow[] = PROOF.simd.bars.map((b) => ({
+  const rows: LolliRow[] = PROOF.simd.bars.map((b) => ({
     label: b.label,
+    value: b.gbps,
     valueLabel: `${b.gbps.toFixed(2)} GB/s`,
-    frac: b.gbps / max,
     mult: b.mult,
     role: b.role,
   }));
@@ -113,8 +194,8 @@ export const ProofSimdPage: React.FC<PageProps> = (p) => {
     <BodyPage {...p} sectionLabel="PROOF" sectionColor={GREEN} eyebrow={PROOF.simd.eyebrow} headline={PROOF.simd.headline}>
       <Hero value={PROOF.simd.hero} label={PROOF.simd.heroLabel} color={COLORS.AMBER_DEEP} />
       <div style={{ height: 18 }} />
-      <BarChart rows={rows} />
-      <Body style={{ marginTop: 18 }}>{PROOF.simd.body}</Body>
+      <Lollipop rows={rows} max={max} />
+      <Body style={{ marginTop: 16 }}>{PROOF.simd.body}</Body>
       <div style={{ marginTop: 10 }}>
         <BenchMeta />
       </div>
@@ -123,40 +204,22 @@ export const ProofSimdPage: React.FC<PageProps> = (p) => {
   );
 };
 
-/** Page 19 — ~6.5× parallel over single-thread. */
-export const ProofParallelPage: React.FC<PageProps> = (p) => {
-  const max = 680;
-  const rows: BarRow[] = PROOF.parallel.bars.map((b) => {
-    const base: BarRow = {
-      label: b.label,
-      valueLabel: `${b.mbps.toFixed(1)} MB/s`,
-      frac: b.mbps / max,
-      mult: b.mult,
-      role: b.role,
-    };
-    if ("errorPct" in b && b.errorPct) {
-      const lo = (b.mbps * (1 - b.errorPct / 100)) / max;
-      const hi = (b.mbps * (1 + b.errorPct / 100)) / max;
-      base.errorFrac = [lo, hi];
-    }
-    return base;
-  });
-  return (
-    <BodyPage {...p} sectionLabel="PROOF" sectionColor={GREEN} eyebrow={PROOF.parallel.eyebrow} headline={PROOF.parallel.headline}>
-      <Hero value={PROOF.parallel.hero} label={PROOF.parallel.heroLabel} color={COLORS.AMBER_DEEP} />
-      <div style={{ height: 18 }} />
-      <BarChart rows={rows} />
-      <div style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_MUTED, marginTop: 6 }}>
-        ⊢ {PROOF.parallel.errorNote} · {PROOF.parallel.corpus}
-      </div>
-      <Body style={{ marginTop: 16 }}>{PROOF.parallel.body}</Body>
-      <div style={{ marginTop: 10 }}>
-        <BenchMeta />
-      </div>
-      <SourceRail extra={BENCH_META.quickRun}>{PROOF.parallel.source}</SourceRail>
-    </BodyPage>
-  );
-};
+/** Page 19 — ~6.5× parallel over single-thread (radial gauge with ±50% band). */
+export const ProofParallelPage: React.FC<PageProps> = (p) => (
+  <BodyPage {...p} sectionLabel="PROOF" sectionColor={GREEN} eyebrow={PROOF.parallel.eyebrow} headline={PROOF.parallel.headline}>
+    <Hero value={PROOF.parallel.hero} label={PROOF.parallel.heroLabel} color={COLORS.AMBER_DEEP} />
+    <div style={{ height: 10 }} />
+    <SpeedGauge />
+    <div style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_MUTED, marginTop: 8 }}>
+      ⊢ {PROOF.parallel.errorNote} · {PROOF.parallel.corpus}
+    </div>
+    <Body style={{ marginTop: 12 }}>{PROOF.parallel.body}</Body>
+    <div style={{ marginTop: 10 }}>
+      <BenchMeta />
+    </div>
+    <SourceRail extra={BENCH_META.quickRun}>{PROOF.parallel.source}</SourceRail>
+  </BodyPage>
+);
 
 /** Page 20 — 72 tests, and it's real gzip. */
 export const ProofTestsPage: React.FC<PageProps> = (p) => (
