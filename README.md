@@ -9,6 +9,10 @@ Memory API**, and **virtual threads**.
 
 > **Status:** compiles clean on JDK 25 and all **72 tests pass** (`Tests run: 72, Failures: 0,
 > Errors: 0, Skipped: 0`), including external-tool round-trips against the system `gzip(1)`.
+>
+> **Landing:** a self-contained web landing in [`web/`](web/) *visualizes* the engine — the parallel
+> pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches the table
+> below, error bars included). See [Web landing](#web-landing).
 
 ---
 
@@ -237,7 +241,7 @@ java --add-modules=jdk.incubator.vector -jar target/benchmarks.jar Adler32
 jetpack-compress/
 ├── pom.xml                     # release 25; incubator-vector flags for compile/test/exec/JMH; `bench` profile
 ├── README.md
-└── src/
+├── src/
     ├── main/java/com/ayush/jetpack/
     │   ├── core/
     │   │   ├── ParallelGzipCompressor.java   # virtual-thread block compressor → single gzip member
@@ -251,7 +255,39 @@ jetpack-compress/
     │       └── Main.java                     # compress / decompress / adler / info
     ├── test/java/com/ayush/jetpack/          # 72 tests (JUnit 5)
     └── jmh/java/com/ayush/jetpack/bench/     # JMH harness (built only under -Pbench)
+└── web/                                      # Vite + React 19 + TS landing (self-contained SPA)
+    ├── src/components/                       # hero + 3 animated visuals (pipeline, SIMD race, bars)
+    ├── src/data/facts.ts                     # single source of truth; every number verified here
+    └── vercel.json                          # Vercel config (project root = web/)
 ```
+
+---
+
+## Web landing
+
+A self-contained single-page landing lives in [`web/`](web/), built with **Vite + React 19 +
+TypeScript** (Tailwind for layout). It is evidence-forward: it *visualizes* the engine rather than
+describing it, and every number on the page is read from one module (`web/src/data/facts.ts`) that
+mirrors this README — the 2.8× SIMD result, the ~6.5× parallel result (±50% on the quick run), the 72
+tests, and the honest "DEFLATE is delegated to zlib" scope are all stated plainly.
+
+Three real, animated visuals:
+
+1. **Parallel pipeline** — one input stream splitting into 1 MiB blocks, fanning out to
+   virtual-thread workers, and stitching (`SYNC_FLUSH`) back into a single gzip member.
+2. **SIMD lanes** — scalar (1 byte/step) vs vectorized Adler-32 (16-byte NEON stride) racing, landing
+   on the measured **2.8×** (not 16×, and not against the JDK intrinsic).
+3. **Benchmark bars** — the 2.8× and ~6.5× figures, each scoped to what it measures, with the JDK
+   intrinsic shown as a "not beaten" reference and a ±50% error whisker on the quick-run parallel number.
+
+```bash
+cd web
+npm install
+npm run dev       # local dev server
+npm run build     # production build -> web/dist  (must pass; `npm run typecheck` too)
+```
+
+The deploy target is **Vercel with the project root set to `web/`** (`web/vercel.json` is committed).
 
 ---
 
