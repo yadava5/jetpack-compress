@@ -1,6 +1,7 @@
-import { ACTS, TESTS } from '../data/facts'
+import { ACTS, TESTS, BENCH_META } from '../data/facts'
 import { SectionHead } from './SectionHead'
-import { BenchBars } from './BenchBars'
+import { AdlerGauge } from './AdlerGauge'
+import { ParallelTimeline } from './ParallelTimeline'
 import { Reveal } from './Reveal'
 import { CheckIcon } from './icons'
 
@@ -20,7 +21,32 @@ export function ProofSection() {
           lead="Real JMH throughput from a reduced quick run on this machine — each figure scoped to what it measures, error bars shown where a number is soft. Then the part that actually matters: it is provably still gzip."
         />
 
-        <BenchBars />
+        <div style={{ display: 'grid', gap: 20 }}>
+          <div className="bench-grid">
+            <Reveal>
+              <AdlerGauge />
+            </Reveal>
+            <Reveal delay={90}>
+              <ParallelTimeline />
+            </Reveal>
+          </div>
+
+          <Reveal>
+            <div className="card" style={{ padding: '16px 20px' }}>
+              <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--color-faint)', display: 'grid', gap: 6 }}>
+                <div>
+                  <span style={{ color: 'var(--color-muted)' }}>machine</span> · {BENCH_META.machine}
+                </div>
+                <div>
+                  <span style={{ color: 'var(--color-muted)' }}>jvm</span> · {BENCH_META.jvm}
+                  <span style={{ margin: '0 8px', color: 'var(--color-line2)' }}>|</span>
+                  <span style={{ color: 'var(--color-muted)' }}>harness</span> · {BENCH_META.harness}
+                </div>
+                <div style={{ color: 'var(--color-faint)' }}>{BENCH_META.caveat}</div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
 
         <div className="impl-movement">
           <Reveal>
