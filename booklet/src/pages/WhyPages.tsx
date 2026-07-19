@@ -11,13 +11,16 @@ const STEEL = SECTION_INK["01_WHY"];
 /** Page 05 — the idle machine. */
 export const WhyIdlePage: React.FC<PageProps> = (p) => (
   <BodyPage {...p} sectionLabel="WHY" sectionColor={STEEL} eyebrow={WHY.idle.eyebrow} headline={WHY.idle.headline}>
-    <div style={{ margin: "2px 0 20px", maxWidth: "6.2in" }}>
+    <div style={{ margin: "2px 0 16px", maxWidth: "6.4in" }}>
       <PullQuote color={COLORS.INK}>{WHY.idle.pullQuote}</PullQuote>
     </div>
     {WHY.idle.body.map((t) => (
       <Body key={t.slice(0, 24)}>{t}</Body>
     ))}
-    <StatStrip stats={WHY.idle.stats} accent={STEEL} style={{ marginTop: 12 }} />
+
+    <CoreComparison />
+
+    <StatStrip stats={WHY.idle.stats} accent={STEEL} style={{ marginTop: 16 }} />
     <p
       style={{
         fontFamily: FONTS.SERIF,
@@ -25,8 +28,8 @@ export const WhyIdlePage: React.FC<PageProps> = (p) => (
         fontSize: 15,
         lineHeight: 1.4,
         color: COLORS.INK,
-        margin: "18px 0 0",
-        maxWidth: "6.2in",
+        margin: "14px 0 0",
+        maxWidth: "6.4in",
       }}
     >
       {WHY.idle.coda}
@@ -34,6 +37,74 @@ export const WhyIdlePage: React.FC<PageProps> = (p) => (
     <SourceRail>{WHY.idle.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * The book's whole thesis in one picture: the ten cores of the benchmark
+ * machine (BENCH_META) under single-thread gzip — one lit, nine dark — versus
+ * block-parallel, where every core is busy. Schematic of the 10-core box; the
+ * multiple is the measured §04 figure.
+ */
+const CoreComparison: React.FC = () => {
+  const CORES = 10;
+  const Row: React.FC<{ label: string; busy: number; right: string; rightSub: string; rightColor: string }> = ({
+    label,
+    busy,
+    right,
+    rightSub,
+    rightColor,
+  }) => (
+    <div style={{ display: "grid", gridTemplateColumns: "1.15in 1fr 1.35in", columnGap: 14, alignItems: "center" }}>
+      <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.02em", color: COLORS.INK, lineHeight: 1.2 }}>{label}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 4 }}>
+        {Array.from({ length: CORES }, (_, i) => {
+          const on = i < busy;
+          return (
+            <div
+              key={i}
+              style={{
+                height: 22,
+                borderRadius: 2.5,
+                background: on ? COLORS.AMBER_DEEP : "transparent",
+                border: on ? "none" : `1px solid ${COLORS.HAIRLINE_STRONG}`,
+              }}
+            />
+          );
+        })}
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 12, fontWeight: 700, color: rightColor, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{right}</div>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 7.5, color: COLORS.INK_MUTED, marginTop: 3 }}>{rightSub}</div>
+      </div>
+    </div>
+  );
+  return (
+    <div
+      style={{
+        border: `0.5pt solid ${COLORS.HAIRLINE}`,
+        borderRadius: 6,
+        background: COLORS.PAPER_ELEVATED,
+        padding: "14px 16px",
+        marginTop: 18,
+        maxWidth: "6.4in",
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: STEEL }}>
+          core occupancy · single-thread vs block-parallel
+        </span>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 7, color: COLORS.INK_SUBTLE }}>schematic · 10-core Apple Silicon</span>
+      </div>
+      <Row label="single-thread gzip" busy={1} right="1 / 10" rightSub="busy · 66.8 MB/s" rightColor={STEEL} />
+      <Row label="block-parallel · jetpack" busy={10} right="10 / 10" rightSub="busy · ~6.5× → §04" rightColor={COLORS.AMBER_DEEP} />
+      <div style={{ borderTop: `0.5pt solid ${COLORS.HAIRLINE}`, paddingTop: 10, fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10.5, lineHeight: 1.35, color: COLORS.INK_MUTED }}>
+        Same codec, same output — the speed-up is the nine cores gzip leaves parked, put to work.
+      </div>
+    </div>
+  );
+};
 
 /** Page 06 — throughput on the floor (dumbbell: the gap the scheduler closes). */
 export const WhyFloorPage: React.FC<PageProps> = (p) => (
@@ -55,9 +126,47 @@ export const WhyFloorPage: React.FC<PageProps> = (p) => (
     </div>
 
     <Body style={{ marginTop: 18 }}>{WHY.floor.body}</Body>
+
+    <CorpusMakeup />
+
     <SourceRail>{WHY.floor.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * What the floor is measured on: the 32 MiB mixed corpus — compressible text
+ * runs plus incompressible noise — at DEFLATE level 6. Same corpus the §04
+ * parallel number uses, so the floor and the recovery are like-for-like.
+ */
+const CorpusMakeup: React.FC = () => {
+  const segs = [
+    { frac: 0.58, color: COLORS.STEEL_DEEP, tint: COLORS.STEEL_TINT, label: "compressible text runs", note: "LZ77 finds the matches" },
+    { frac: 0.42, color: COLORS.SLATE_DEEP, tint: "rgba(139,147,161,0.14)", label: "incompressible noise", note: "stored, near 1:1" },
+  ];
+  return (
+    <div style={{ marginTop: 18, maxWidth: "6.4in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: STEEL }}>
+          the corpus, both numbers share
+        </span>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_SUBTLE }}>32 MiB mixed · level 6 · schematic</span>
+      </div>
+      <div style={{ display: "flex", gap: 3, height: 22 }}>
+        {segs.map((s) => (
+          <div key={s.label} style={{ flex: s.frac, background: s.tint, borderTop: `2.5px solid ${s.color}`, borderRadius: 2 }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 3, marginTop: 6 }}>
+        {segs.map((s) => (
+          <div key={s.label} style={{ flex: s.frac }}>
+            <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, color: s.color }}>{s.label}</div>
+            <div style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 9.5, color: COLORS.INK_MUTED }}>{s.note}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 /**
  * A dumbbell / range plot: the single-thread floor (steel) and the recovered
@@ -148,6 +257,44 @@ export const WhyScopePage: React.FC<PageProps> = (p) => (
       <ScopeColumn label="delegated → zlib" accent={COLORS.STEEL_DEEP} items={WHY.scope.delegated} variant="solid" />
       <ScopeColumn label="planned / future" accent={COLORS.SLATE_DEEP} items={WHY.scope.planned} variant="dashed" />
     </div>
+
+    <ScopeRatio
+      handWritten={WHY.scope.handWritten.length}
+      delegated={WHY.scope.delegated.length}
+    />
+
     <SourceRail>{WHY.scope.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * The scope, as one bar: five hand-written parts (amber) and two delegated to
+ * zlib (steel), summing to a single byte-valid gzip member. Counts come
+ * straight from the two lists above — no invented figures.
+ */
+const ScopeRatio: React.FC<{ handWritten: number; delegated: number }> = ({ handWritten, delegated }) => {
+  const total = handWritten + delegated;
+  return (
+    <div style={{ marginTop: 20, maxWidth: "6.4in", borderTop: `1pt solid ${COLORS.INK}`, paddingTop: 14 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: COLORS.INK_MUTED }}>
+          the whole engine, in {total} parts
+        </span>
+        <span style={{ fontFamily: FONTS.MONO, fontSize: 8, color: COLORS.INK_SUBTLE }}>
+          {handWritten} hand-written · {delegated} delegated
+        </span>
+      </div>
+      <div style={{ display: "flex", gap: 3, height: 24 }}>
+        {Array.from({ length: handWritten }, (_, i) => (
+          <div key={`h${i}`} style={{ flex: 1, background: COLORS.AMBER_TINT, borderTop: `2.5px solid ${COLORS.AMBER_DEEP}`, borderRadius: 2 }} />
+        ))}
+        {Array.from({ length: delegated }, (_, i) => (
+          <div key={`d${i}`} style={{ flex: 1, background: COLORS.STEEL_TINT, borderTop: `2.5px solid ${COLORS.STEEL_DEEP}`, borderRadius: 2 }} />
+        ))}
+      </div>
+      <p style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 13, lineHeight: 1.4, color: COLORS.INK, margin: "12px 0 0" }}>
+        Five parts written by hand, two handed to a battle-tested codec — and the delegation is itself the proof the output is standard gzip.
+      </p>
+    </div>
+  );
+};
