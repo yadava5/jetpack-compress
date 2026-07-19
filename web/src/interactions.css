@@ -1,0 +1,182 @@
+/* ------------------------------------------------------------------ *
+ * Micro-interaction layer — the polish on top of the structure.
+ * Restrained on purpose: soft cursor spotlights, magnetic CTAs, a slow
+ * beam border, cursor-reactive type, count-ups. Everything here is tuned
+ * to ink + amber and degrades to a calm static state under reduced motion.
+ * ------------------------------------------------------------------ */
+
+/* Registered so the fades/rotations below can transition custom properties. */
+@property --spot-o {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --beam-a {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Cursor-follow spotlight -------------------------------------- *
+ * The glow is a background layer of the element, so it always sits behind
+ * the content — it can never wash out text. */
+.glow-card {
+  position: relative;
+  background:
+    radial-gradient(
+      440px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgba(255, 158, 44, var(--spot-o, 0)),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--color-panel), var(--color-ink2));
+  transition: --spot-o 0.45s ease;
+}
+.glow-card.spot-on {
+  --spot-o: 0.1;
+}
+
+/* --- Magnetic wrapper (CTA pulls toward the cursor) --------------- */
+.mag {
+  display: inline-flex;
+  transform: translate(var(--mag-x, 0px), var(--mag-y, 0px));
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.mag.mag-on {
+  transition: transform 0.12s ease-out;
+}
+
+/* --- 3D tilt (signature product card) ----------------------------- */
+.tilt {
+  transform: perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.tilt.tilt-on {
+  transition: transform 0.1s linear;
+}
+
+/* --- Slow beam traveling a 1px border (signature cards) ----------- */
+.beam {
+  position: relative;
+}
+.beam::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--beam-a),
+    transparent 0deg 62%,
+    rgba(255, 158, 44, 0.55) 78%,
+    rgba(255, 210, 150, 0.9) 84%,
+    rgba(255, 158, 44, 0.55) 90%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: beam-spin 7s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes beam-spin {
+  to {
+    --beam-a: 360deg;
+  }
+}
+
+/* --- Gradient-text shimmer (one headline word) -------------------- */
+.shimmer-text {
+  background: linear-gradient(
+    100deg,
+    var(--color-amber) 18%,
+    #ffe0b0 42%,
+    var(--color-amber) 62%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shimmer 6.5s linear infinite;
+}
+@keyframes text-shimmer {
+  to {
+    background-position: -220% center;
+  }
+}
+
+/* --- Cursor-reactive per-character type (hero title) -------------- */
+.rx-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.rx-char {
+  display: inline-block;
+  transform: translateY(calc(var(--w, 0) * -0.16em));
+  color: color-mix(in srgb, var(--color-amber) calc(var(--w, 0) * 85%), currentColor);
+  text-shadow: 0 calc(var(--w, 0) * 6px) calc(var(--w, 0) * 18px) rgba(255, 158, 44, calc(var(--w, 0) * 0.35));
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.28s ease,
+    text-shadow 0.28s ease;
+  will-change: transform;
+}
+
+/* --- Decode / compress-squeeze type ------------------------------- */
+.scramble {
+  white-space: nowrap;
+}
+.squeeze {
+  display: inline-block;
+  transition:
+    letter-spacing 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Hovering the host squeezes the word's letters together, then it springs back. */
+.sqz-host:hover .squeeze,
+.sqz-host:focus-visible .squeeze {
+  letter-spacing: -0.09em;
+}
+
+/* Anchor targets clear the sticky nav when the story auto-scrolls between acts. */
+.section,
+.footer {
+  scroll-margin-top: 76px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-card.spot-on {
+    --spot-o: 0;
+  }
+  .mag,
+  .tilt {
+    transform: none !important;
+  }
+  .beam::after {
+    animation: none;
+    background: conic-gradient(
+      from 210deg,
+      transparent 0deg 70%,
+      rgba(255, 158, 44, 0.4) 82%,
+      transparent 100%
+    );
+  }
+  .shimmer-text {
+    animation: none;
+    background-position: 0 center;
+  }
+  .rx-char {
+    transform: none;
+    color: inherit;
+    text-shadow: none;
+  }
+}
