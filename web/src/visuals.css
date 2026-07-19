@@ -1,0 +1,198 @@
+/* ------------------------------------------------------------------ *
+ * Styles specific to the three engine visualizations.
+ * ------------------------------------------------------------------ */
+
+.viz-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(16px, 3vw, 28px);
+}
+
+.viz-cap {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--color-faint);
+  line-height: 1.5;
+}
+
+/* --- Pipeline SVG -------------------------------------------------- */
+.svg-flow {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.flow-line {
+  fill: none;
+  stroke: var(--color-line2);
+  stroke-width: 1.5;
+  stroke-dasharray: 2.5 7;
+  animation: flow 1.15s linear infinite;
+}
+
+.flow-line.warm {
+  stroke: var(--amber-line);
+}
+
+.flow-line.steel {
+  stroke: var(--steel-line);
+}
+
+.svg-txt {
+  font-family: var(--font-mono);
+  fill: var(--color-muted);
+}
+
+.svg-txt-faint {
+  font-family: var(--font-mono);
+  fill: var(--color-faint);
+}
+
+.worker-fill {
+  animation: shimmer 1.9s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.pipe-seg {
+  transition: filter 0.2s ease;
+}
+
+/* --- SIMD race ----------------------------------------------------- */
+.race-lane {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.race-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.race-track {
+  position: relative;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--color-line);
+  overflow: hidden;
+  background-color: var(--color-ink2);
+}
+
+/* the per-byte / per-stride texture printed onto each track */
+.race-track.scalar {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+}
+
+.race-track.vector {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.09) 0,
+    rgba(255, 255, 255, 0.09) 2px,
+    transparent 2px,
+    transparent 40px
+  );
+}
+
+.race-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  will-change: width;
+}
+
+.race-fill.scalar {
+  background: linear-gradient(90deg, rgba(107, 165, 196, 0.15), var(--steel-soft));
+  border-right: 2px solid var(--color-steel);
+}
+
+.race-fill.vector {
+  background: linear-gradient(90deg, rgba(255, 158, 44, 0.16), var(--amber-soft));
+  border-right: 2px solid var(--color-amber);
+}
+
+.race-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+}
+
+/* --- Bench bars ---------------------------------------------------- */
+.bar-row {
+  display: grid;
+  gap: 6px;
+}
+
+.bar-fill.hero {
+  background: linear-gradient(90deg, #c9781a, var(--color-amber));
+}
+
+.bar-fill.baseline {
+  background: linear-gradient(90deg, #3d6478, var(--color-steel));
+}
+
+.bar-fill.reference {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(154, 160, 168, 0.16),
+    rgba(154, 160, 168, 0.16) 6px,
+    rgba(154, 160, 168, 0.06) 6px,
+    rgba(154, 160, 168, 0.06) 12px
+  );
+  border-right: 1px dashed var(--color-faint);
+}
+
+.whisker {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.55);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.5s ease 0.9s;
+}
+
+.whisker.in {
+  opacity: 0.7;
+}
+
+.whisker::before,
+.whisker::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  width: 2px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.whisker::before {
+  left: 0;
+}
+
+.whisker::after {
+  right: 0;
+}
+
+.mult-chip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.15em 0.5em;
+  border-radius: 6px;
+  border: 1px solid var(--color-line2);
+  color: var(--color-muted);
+}
+
+.mult-chip.hero {
+  color: var(--color-amber);
+  border-color: var(--amber-line);
+  background: var(--amber-soft);
+}
