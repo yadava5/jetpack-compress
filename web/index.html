@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0A0B0D" />
+    <title>jetpack-compress — parallel, gzip-compatible compression on JDK 25</title>
+    <meta
+      name="description"
+      content="A high-throughput, gzip-compatible parallel compression engine in JDK 25. Blocks compressed on virtual threads and stitched into one byte-valid gzip member, with a hand-vectorized Adler-32 built on the Vector API. 72 tests green."
+    />
+    <meta property="og:title" content="jetpack-compress" />
+    <meta
+      property="og:description"
+      content="Parallel gzip on virtual threads + hand-vectorized SIMD Adler-32. Byte-valid gzip, 72 tests green. JDK 25."
+    />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
