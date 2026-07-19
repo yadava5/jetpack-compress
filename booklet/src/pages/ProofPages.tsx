@@ -130,7 +130,7 @@ const SpeedGauge: React.FC = () => {
         {(() => { const [bx, by] = pt(1 / MAX, R + 6); const [bx2, by2] = pt(1 / MAX, R - 9); return (
           <>
             <line x1={bx2} y1={by2} x2={bx} y2={by} stroke={COLORS.STEEL_DEEP} strokeWidth={1.4} />
-            <text x={bx - 2} y={by + 12} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.STEEL_DEEP}>1× floor</text>
+            <text x={bx - 10} y={by + 22} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.STEEL_DEEP}>1× floor</text>
           </>
         ); })()}
         {/* ticks */}
@@ -193,14 +193,62 @@ export const ProofSimdPage: React.FC<PageProps> = (p) => {
   return (
     <BodyPage {...p} sectionLabel="PROOF" sectionColor={GREEN} eyebrow={PROOF.simd.eyebrow} headline={PROOF.simd.headline}>
       <Hero value={PROOF.simd.hero} label={PROOF.simd.heroLabel} color={COLORS.AMBER_DEEP} />
-      <div style={{ height: 18 }} />
+      <div style={{ height: 16 }} />
       <Lollipop rows={rows} max={max} />
-      <Body style={{ marginTop: 16 }}>{PROOF.simd.body}</Body>
-      <div style={{ marginTop: 10 }}>
-        <BenchMeta />
-      </div>
+      <Body style={{ marginTop: 14 }}>{PROOF.simd.body}</Body>
+      <BenchEnvironment />
       <SourceRail extra={`${PROOF.simd.buffer} · ${BENCH_META.quickRun}`}>{PROOF.simd.source}</SourceRail>
     </BodyPage>
+  );
+};
+
+/**
+ * The benchmark environment (left) and how to read the modest NEON gain
+ * (right). Every value is BENCH_META / PROOF.simd — the honest context that
+ * lets a reader judge the 2.8× rather than take it on faith.
+ */
+const BenchEnvironment: React.FC = () => {
+  const rows = [
+    { k: "MACHINE", v: BENCH_META.machine },
+    { k: "JVM", v: BENCH_META.jvm },
+    { k: "HARNESS", v: BENCH_META.harness },
+    { k: "RUN", v: `${PROOF.simd.buffer} · ${BENCH_META.quickRun}` },
+  ];
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1.5fr 1fr",
+        columnGap: 20,
+        marginTop: 16,
+        borderTop: `1pt solid ${COLORS.INK}`,
+        paddingTop: 14,
+        maxWidth: "6.4in",
+      }}
+    >
+      <div>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: GREEN, marginBottom: 8 }}>
+          benchmark environment
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {rows.map((r) => (
+            <div key={r.k} style={{ display: "grid", gridTemplateColumns: "0.7in 1fr", columnGap: 10, alignItems: "baseline" }}>
+              <span style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", color: COLORS.INK_MUTED }}>{r.k}</span>
+              <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, color: COLORS.INK, lineHeight: 1.3 }}>{r.v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ borderLeft: `0.5pt solid ${COLORS.HAIRLINE}`, paddingLeft: 18 }}>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: COLORS.AMBER_DEEP, marginBottom: 8 }}>
+          reading the gain
+        </div>
+        <p style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 11, lineHeight: 1.4, color: COLORS.INK_MUTED, margin: 0 }}>
+          128-bit NEON moves 16 bytes a stride — a deliberately modest width. On AVX2 (32 B) or AVX-512 (64 B) the
+          same code has more lanes to fill, so expect a larger vector-over-scalar multiple there.
+        </p>
+      </div>
+    </div>
   );
 };
 
@@ -217,6 +265,11 @@ export const ProofParallelPage: React.FC<PageProps> = (p) => (
     <div style={{ marginTop: 10 }}>
       <BenchMeta />
     </div>
+    <Callout label="why the error bar is this wide" accent={GREEN} style={{ marginTop: 16 }}>
+      A quick run trades precision for speed — one fork, three warmup and four one-second measurement iterations.
+      That is enough to show the shape of the win, not to pin the exact multiple; the shaded band is that honesty made
+      visible. Re-run the full JMH harness for a tight number.
+    </Callout>
     <SourceRail extra={BENCH_META.quickRun}>{PROOF.parallel.source}</SourceRail>
   </BodyPage>
 );
@@ -252,9 +305,38 @@ export const ProofTestsPage: React.FC<PageProps> = (p) => (
       </div>
     </div>
 
-    <Callout label="cross-tool validated" accent={GREEN} style={{ marginTop: 18 }}>
+    <ValidationMethods />
+
+    <Callout label="the strongest proof" accent={GREEN} style={{ marginTop: 14 }}>
       {PROOF.tests.crossTool}
     </Callout>
     <SourceRail>{PROOF.tests.source}</SourceRail>
   </BodyPage>
 );
+
+/**
+ * The three independent ways the output is checked — the plain-language
+ * version of PROOF.tests.body. Each card names the suite that enforces it, so
+ * the claim traces to a green test, not a promise.
+ */
+const ValidationMethods: React.FC = () => {
+  const methods = [
+    { g: "↻", t: "round-trip", d: "decompress(compress(x)) == x — through our decoder and a plain GZIPInputStream.", suite: "RoundTripTest · 21" },
+    { g: "⇄", t: "cross-tool gzip", d: "the system gzip -t / gzip -dc decode our bytes, and we decode gzip -9’s.", suite: "CrossToolTest · 3" },
+    { g: "≡", t: "checksum parity", d: "the vectorized Adler-32 is bit-identical to java.util.zip.Adler32.", suite: "Adler32Test · 35" },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginTop: 18 }}>
+      {methods.map((m) => (
+        <div key={m.t} style={{ border: `0.5pt solid ${COLORS.HAIRLINE}`, borderTop: `2.5px solid ${GREEN}`, borderRadius: 5, background: COLORS.PAPER_ELEVATED, padding: "11px 13px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 14, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{m.g}</span>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 10, fontWeight: 700, letterSpacing: "0.02em", color: COLORS.INK }}>{m.t}</span>
+          </div>
+          <div style={{ fontFamily: FONTS.SANS, fontSize: 9.5, lineHeight: 1.35, color: COLORS.INK_MUTED }}>{m.d}</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 600, letterSpacing: "0.04em", color: GREEN, marginTop: "auto" }}>{m.suite}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
