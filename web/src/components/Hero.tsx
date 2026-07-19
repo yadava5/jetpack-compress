@@ -1,7 +1,7 @@
 import { SITE, HERO_BADGES, PROOF_STRIP } from '../data/facts'
-import { PipelineViz } from './PipelineViz'
+import { MemberRibbon } from './MemberRibbon'
 import { Reveal } from './Reveal'
-import { GitHubIcon, ArrowDown } from './icons'
+import { GitHubIcon, BookIcon, ArrowDown } from './icons'
 
 export function Hero() {
   return (
@@ -10,9 +10,9 @@ export function Hero() {
         <Reveal>
           <div className="kicker">parallel gzip · virtual threads · JDK 25</div>
           <h1 className="hero-title">
-            Parallel gzip on virtual threads.
+            Parallel gzip that is still,
             <br />
-            Byte-for-byte <span className="accent">real gzip.</span>
+            byte for byte, <span className="accent">real gzip.</span>
           </h1>
           <p className="lead hero-lead">
             {SITE.oneLiner} The novelty is the parallel framing and a hand-vectorized SIMD stage —{' '}
@@ -34,21 +34,20 @@ export function Hero() {
               <GitHubIcon />
               View the source
             </a>
-            <a className="btn" href="#benchmarks">
+            <a className="btn btn-card" href={SITE.systemCard}>
+              <BookIcon />
+              Read the System Card
+            </a>
+            <a className="btn btn-ghost" href="#problem">
               <ArrowDown />
-              See the benchmarks
+              Start the story
             </a>
           </div>
         </Reveal>
 
         <Reveal delay={120}>
           <figure className="hero-viz card">
-            <PipelineViz />
-            <figcaption className="viz-cap hero-viz-cap">
-              One input, split into 1 MiB blocks, each compressed on its own virtual thread, then
-              stitched with SYNC_FLUSH into a single gzip member — the trailer CRC folded from
-              per-block CRCs.
-            </figcaption>
+            <MemberRibbon />
           </figure>
         </Reveal>
 
