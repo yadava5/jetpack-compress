@@ -1,7 +1,8 @@
-import { CLI } from '../data/facts'
+import { ACTS, CLI, SITE } from '../data/facts'
 import { SectionHead } from './SectionHead'
 import { Reveal } from './Reveal'
 import { CopyButton } from './CopyButton'
+import { GitHubIcon, BookIcon, ArrowRight } from './icons'
 
 const COPY_TEXT = [
   'JAR=target/jetpack-compress.jar',
@@ -9,18 +10,20 @@ const COPY_TEXT = [
   'java $VEC -jar $JAR compress notes.txt notes.txt.gz -l 6',
 ].join('\n')
 
-export function CliBlock() {
+export function TryItSection() {
   return (
-    <section className="section hair" id="cli">
+    <section className="section hair" id="try">
       <div className="wrap">
         <SectionHead
+          act={ACTS.tryit.n}
+          actLabel={ACTS.tryit.label}
           kicker="command line"
           title={
             <>
-              Real usage. Real gzip <span className="accent">round-trip.</span>
+              Compress it here. Verify it with <span className="accent">system gzip.</span>
             </>
           }
-          lead="Compress with the parallel engine, then verify the output with the system gzip itself — because it is standard gzip."
+          lead="Because the output is standard gzip, the strongest test is the one you can run yourself — round-trip through the real gzip(1)."
         />
 
         <div className="cli-grid">
@@ -63,6 +66,33 @@ export function CliBlock() {
             </div>
           </Reveal>
         </div>
+
+        <Reveal>
+          <div className="card end-card">
+            <div className="end-card-copy">
+              <div className="kicker">go deeper</div>
+              <h3 className="end-card-title">
+                The full build, end to end — the <span className="accent">System Card.</span>
+              </h3>
+              <p className="end-card-lead">
+                Twenty-four pages on the same five acts: why gzip leaves cores idle, how the blocks
+                stitch into one member, the hand-vectorized checksum, the measured proof, and the
+                toolchain. Or read the source and run the 72 tests yourself.
+              </p>
+            </div>
+            <div className="end-card-cta">
+              <a className="btn btn-primary btn-lg" href={SITE.systemCard}>
+                <BookIcon />
+                Read the System Card
+                <ArrowRight />
+              </a>
+              <a className="btn btn-lg" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+                <GitHubIcon />
+                View on GitHub
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
