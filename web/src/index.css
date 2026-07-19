@@ -218,6 +218,38 @@
     border-color: #ffad4c;
   }
 
+  /* Amber-outline — the System Card call, prominent but distinct from the solid primary. */
+  .btn-card {
+    border-color: var(--amber-line);
+    background: var(--amber-soft);
+    color: var(--color-amber);
+    font-weight: 500;
+  }
+
+  .btn-card:hover {
+    border-color: var(--color-amber);
+    background: rgba(255, 158, 44, 0.18);
+    color: #ffad4c;
+  }
+
+  /* Ghost — the quietest tertiary action. */
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--color-line);
+    color: var(--color-muted);
+  }
+
+  .btn-ghost:hover {
+    color: var(--color-fg);
+    border-color: var(--color-line2);
+  }
+
+  /* Large — the finale CTAs. */
+  .btn-lg {
+    padding: 0.85em 1.4em;
+    font-size: 1rem;
+  }
+
   /* Live dot ---------------------------------------------------------- */
   .dot {
     width: 7px;
