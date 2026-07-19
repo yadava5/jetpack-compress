@@ -40,3 +40,20 @@ export function CheckIcon({ size = 14 }: { size?: number }) {
     </svg>
   )
 }
+
+export function BookIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
+      <path d="M8 3.4C6.9 2.6 5.5 2.2 3.8 2.2c-.6 0-1.1.05-1.6.15v9.3c.5-.1 1-.15 1.6-.15 1.7 0 3.1.4 4.2 1.2 1.1-.8 2.5-1.2 4.2-1.2.6 0 1.1.05 1.6.15V2.35c-.5-.1-1-.15-1.6-.15-1.7 0-3.1.4-4.2 1.2Z" strokeLinejoin="round" />
+      <path d="M8 3.4v9.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function ArrowRight({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
