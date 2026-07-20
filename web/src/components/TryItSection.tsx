@@ -2,7 +2,7 @@ import { ACTS, CLI, SITE } from '../data/facts'
 import { SectionHead } from './SectionHead'
 import { Reveal } from './Reveal'
 import { CopyButton } from './CopyButton'
-import { GitHubIcon, BookIcon, ArrowRight } from './icons'
+import { GitHubIcon, BookIcon, ArrowRight, CompressIcon } from './icons'
 
 const COPY_TEXT = [
   'JAR=target/jetpack-compress.jar',
@@ -20,11 +20,35 @@ export function TryItSection() {
           kicker="command line"
           title={
             <>
-              Compress it here. Verify it with <span className="accent">system gzip.</span>
+              Try it in your browser. Verify it with <span className="accent">system gzip.</span>
             </>
           }
-          lead="Because the output is standard gzip, the strongest test is the one you can run yourself — round-trip through the real gzip(1)."
+          lead="Two honest ways to run it. Compress a file right now in the browser demo, then — because the output is standard gzip — round-trip it through the real gzip(1) and the JVM engine on the command line."
         />
+
+        <Reveal>
+          <div className="card browser-try">
+            <div className="browser-try-copy">
+              <div className="kicker">no install</div>
+              <h3 className="browser-try-title">
+                Compress a file <span className="accent">now</span>, in this tab.
+              </h3>
+              <p className="browser-try-lead">
+                A real tool: drag a file in, watch measured ratio, throughput and time, and download
+                the <code>.gz</code>. It runs on the browser's native <code>CompressionStream</code>
+                {' '}— the same DEFLATE the engine delegates to. It is the demo, not the JVM engine;
+                the engine's parallelism and SIMD are what the proof section measures.
+              </p>
+            </div>
+            <div className="browser-try-cta">
+              <a className="btn btn-primary btn-lg" href={SITE.app}>
+                <CompressIcon />
+                Open the compressor
+                <ArrowRight />
+              </a>
+            </div>
+          </div>
+        </Reveal>
 
         <div className="cli-grid">
           <Reveal>
