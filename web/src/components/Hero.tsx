@@ -5,7 +5,7 @@ import { Reveal } from './Reveal'
 import { Scramble } from './Scramble'
 import { CountUp } from './CountUp'
 import { useCharField, useMagnetic, useTilt } from '../hooks/interactions'
-import { GitHubIcon, BookIcon } from './icons'
+import { GitHubIcon, BookIcon, CompressIcon } from './icons'
 
 /** Splits a run of text into word→character spans so the title's letters can react
  *  to the cursor. Words stay whole on wrap; the spaces between them are real text
@@ -65,16 +65,24 @@ export function Hero() {
 
           <div className="hero-cta">
             <span className="mag" ref={ctaRef}>
-              <a className="btn btn-primary" href={SITE.repo} target="_blank" rel="noreferrer noopener">
-                <GitHubIcon />
-                View the source
+              <a className="btn btn-primary" href={SITE.app}>
+                <CompressIcon />
+                Try it — compress a file now
               </a>
             </span>
             <a className="btn btn-card" href={SITE.systemCard}>
               <BookIcon />
               Read the System Card
             </a>
+            <a className="btn" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+              <GitHubIcon />
+              View the source
+            </a>
           </div>
+          <p className="hero-cta-note mono">
+            Runs entirely in your browser via the native <span className="fg">CompressionStream</span>{' '}
+            — the same DEFLATE the engine delegates to. Nothing is uploaded.
+          </p>
         </Reveal>
 
         <Reveal delay={120}>
