@@ -15,6 +15,8 @@ export const SITE = {
   repo: 'https://github.com/yadava5/jetpack-compress',
   /** The System Card booklet, built as a static sub-site served from this same origin. */
   systemCard: '/system-card/',
+  /** The in-browser compression tool — a real, usable demo built on CompressionStream. */
+  app: '/app',
   jdk: 'JDK 25',
   oneLiner:
     'A high-throughput, gzip-compatible parallel compression engine. Input is split into blocks, DEFLATE-compressed concurrently on virtual threads, and stitched into a single, byte-valid gzip member that any tool decompresses.',
