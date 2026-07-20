@@ -50,6 +50,15 @@ export function BookIcon({ size = 15 }: { size?: number }) {
   )
 }
 
+export function CompressIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path d="M2 5.5V3a1 1 0 011-1h2.5M14 5.5V3a1 1 0 00-1-1h-2.5M2 10.5V13a1 1 0 001 1h2.5M14 10.5V13a1 1 0 01-1 1h-2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 8h6M8 5.5l-2.4 2.5L8 10.5M8 5.5l2.4 2.5L8 10.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+    </svg>
+  )
+}
+
 export function ArrowRight({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
