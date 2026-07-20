@@ -18,6 +18,9 @@ export function Nav() {
           <a href="#solution">Solution</a>
           <a href="#inside">Inside</a>
           <a href="#proof">Proof</a>
+          <a href={SITE.app} className="nav-try">
+            Try it
+          </a>
         </nav>
 
         <div className="nav-actions">
