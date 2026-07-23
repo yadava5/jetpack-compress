@@ -55,12 +55,17 @@ export const InsideRegisters: React.FC = () => (
       </g>
     </g>
 
-    {/* labels */}
+    {/* labels — leadered to their subjects: the lit stride on the mapping and
+        the B2I int-lane cluster (previously floated high-right, detached) */}
     <g style={{ color: COPPER }}>
-      <text x={150} y={92} fontFamily="ui-monospace, monospace" fontSize={5.4} fontWeight={700} fill="currentColor">
+      <circle cx={137} cy={154} r={1.2} fill="currentColor" />
+      <line x1={137} y1={154} x2={152} y2={140} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+      <text x={155} y={138} fontFamily="ui-monospace, monospace" fontSize={5.4} fontWeight={700} fill="currentColor">
         16-byte stride
       </text>
-      <text x={178} y={150} fontFamily="ui-monospace, monospace" fontSize={5} fill="currentColor" opacity={0.9}>
+      <circle cx={144} cy={170} r={1.2} fill="currentColor" />
+      <line x1={144} y1={170} x2={156} y2={166} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+      <text x={159} y={168} fontFamily="ui-monospace, monospace" fontSize={5} fill="currentColor" opacity={0.9}>
         B2I → int
       </text>
     </g>
