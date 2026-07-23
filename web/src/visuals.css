@@ -351,11 +351,14 @@
 }
 .ribbon-scan {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 26%;
+  /* Fill the tape exactly and sweep the shimmer via background-position, so
+     the element box never projects past the tape (a translateX sweep pushed
+     the box to ~140% of the tape width — clipped, but its rect still spilled
+     past the viewport, which the audit flagged as JP-1 / JP-2). */
+  inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  background-size: 42% 100%;
+  background-repeat: no-repeat;
   animation: ribbon-sweep 3.6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -389,11 +392,11 @@
 
 @keyframes ribbon-sweep {
   0% {
-    transform: translateX(-120%);
+    background-position: -75% 0;
   }
   55%,
   100% {
-    transform: translateX(440%);
+    background-position: 175% 0;
   }
 }
 
