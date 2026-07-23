@@ -41,7 +41,7 @@ export function TryItSection() {
               </p>
             </div>
             <div className="browser-try-cta">
-              <a className="btn btn-primary btn-lg" href={SITE.app}>
+              <a className="btn btn-primary btn-lg" href={SITE.app} target="_blank" rel="noopener noreferrer">
                 <CompressIcon />
                 Open the compressor
                 <ArrowRight />
@@ -105,12 +105,12 @@ export function TryItSection() {
               </p>
             </div>
             <div className="end-card-cta">
-              <a className="btn btn-primary btn-lg" href={SITE.systemCard}>
+              <a className="btn btn-primary btn-lg" href={SITE.systemCard} target="_blank" rel="noopener noreferrer">
                 <BookIcon />
                 Read the System Card
                 <ArrowRight />
               </a>
-              <a className="btn btn-lg" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+              <a className="btn btn-lg" href={SITE.repo} target="_blank" rel="noopener noreferrer">
                 <GitHubIcon />
                 View on GitHub
               </a>
