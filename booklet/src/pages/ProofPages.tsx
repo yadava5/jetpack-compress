@@ -130,7 +130,8 @@ const SpeedGauge: React.FC = () => {
         {(() => { const [bx, by] = pt(1 / MAX, R + 6); const [bx2, by2] = pt(1 / MAX, R - 9); return (
           <>
             <line x1={bx2} y1={by2} x2={bx} y2={by} stroke={COLORS.STEEL_DEEP} strokeWidth={1.4} />
-            <text x={bx - 10} y={by + 22} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.STEEL_DEEP}>1× floor</text>
+            {/* anchored end, outside the dial — centered it ran under the value arc */}
+            <text x={bx - 16} y={by + 4} textAnchor="end" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.STEEL_DEEP}>1× floor</text>
           </>
         ); })()}
         {/* ticks */}
