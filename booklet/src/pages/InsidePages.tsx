@@ -76,11 +76,25 @@ export const InsideFfmPage: React.FC<PageProps> = (p) => (
 
     <MappedSlab />
 
-    <Callout label="the two newest APIs, in one command" accent={COPPER} style={{ marginTop: 16 }}>
-      <code style={{ fontFamily: FONTS.MONO, fontSize: 10 }}>jetpack adler &lt;file&gt;</code> memory-maps the input with FFM and runs the
-      vectorized Adler-32 straight over the MemorySegment — SIMD reading vectors out of mapped memory, with no
-      intermediate copy onto the Java heap.
-    </Callout>
+    {/* the two newest APIs, in one command — as a flow strip; the prose above
+        already says it once, so the repeat earns its space as a visual */}
+    <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10, border: `0.5pt solid ${COLORS.HAIRLINE}`, borderLeft: `3px solid ${COPPER}`, borderRadius: 6, background: COLORS.PAPER_ELEVATED, padding: "11px 14px" }}>
+      <code style={{ fontFamily: FONTS.MONO, fontSize: 10.5, fontWeight: 700, color: COLORS.INK, whiteSpace: "nowrap" }}>$ jetpack adler &lt;file&gt;</code>
+      {[
+        { k: "mmap", v: "FFM segment" },
+        { k: "load", v: "16-B ByteVector" },
+        { k: "sum", v: "S1 · S2 lanes" },
+        { k: "out", v: "Adler-32" },
+      ].map((s, i) => (
+        <React.Fragment key={s.k}>
+          <span style={{ color: COLORS.HAIRLINE_STRONG, fontSize: 12 }}>→</span>
+          <span style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: i === 3 ? COLORS.GREEN_DEEP : COPPER }}>{s.k}</span>
+            <span style={{ fontFamily: FONTS.MONO, fontSize: 8.5, color: COLORS.INK_MUTED, whiteSpace: "nowrap" }}>{s.v}</span>
+          </span>
+        </React.Fragment>
+      ))}
+    </div>
 
     <SourceRail>{INSIDE.ffm.source}</SourceRail>
   </BodyPage>
