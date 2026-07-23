@@ -65,16 +65,16 @@ export function Hero() {
 
           <div className="hero-cta">
             <span className="mag" ref={ctaRef}>
-              <a className="btn btn-primary" href={SITE.app}>
+              <a className="btn btn-primary" href={SITE.app} target="_blank" rel="noopener noreferrer">
                 <CompressIcon />
                 Try it — compress a file now
               </a>
             </span>
-            <a className="btn btn-card" href={SITE.systemCard}>
+            <a className="btn btn-card" href={SITE.systemCard} target="_blank" rel="noopener noreferrer">
               <BookIcon />
               Read the System Card
             </a>
-            <a className="btn" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+            <a className="btn" href={SITE.repo} target="_blank" rel="noopener noreferrer">
               <GitHubIcon />
               View the source
             </a>
