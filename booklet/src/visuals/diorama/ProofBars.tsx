@@ -45,12 +45,13 @@ export const ProofBars: React.FC = () => (
       })}
     </g>
 
-    {/* multiples */}
+    {/* multiples — set directly above their hero bars (vector, parallel), not
+        floating in the upper corners */}
     <g style={{ color: GREEN }}>
-      <text x={64} y={70} fontFamily="ui-monospace, monospace" fontSize={8} fontWeight={700} fill="currentColor">
+      <text x={100} y={136} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={8} fontWeight={700} fill="currentColor">
         2.8×
       </text>
-      <text x={150} y={54} fontFamily="ui-monospace, monospace" fontSize={8} fontWeight={700} fill="currentColor">
+      <text x={138} y={154} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={8} fontWeight={700} fill="currentColor">
         ~6.5×
       </text>
     </g>
