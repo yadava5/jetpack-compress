@@ -62,14 +62,15 @@ export const WhyIdleCores: React.FC = () => (
       )}
     </g>
 
-    {/* busy-core callout */}
+    {/* busy-core callout — dot on the lit core's apex, short leader to the
+        label sitting just above the die (was floating 60px up-right, detached) */}
     <g style={{ color: AMBER }}>
-      <line x1={128} y1={70} x2={150} y2={54} stroke="currentColor" strokeWidth={0.6} strokeDasharray="3 2" opacity={0.7} />
-      <circle cx={150} cy={54} r={1.4} fill="currentColor" />
-      <text x={154} y={52} fontFamily="ui-monospace, monospace" fontSize={6.5} fontWeight={700} fill="currentColor">
+      <circle cx={117} cy={121} r={1.4} fill="currentColor" />
+      <line x1={117} y1={121} x2={144} y2={103} stroke="currentColor" strokeWidth={0.6} strokeDasharray="3 2" opacity={0.7} />
+      <text x={147} y={101} fontFamily="ui-monospace, monospace" fontSize={6.5} fontWeight={700} fill="currentColor">
         gzip
       </text>
-      <text x={154} y={60} fontFamily="ui-monospace, monospace" fontSize={4.6} fill="currentColor" opacity={0.85}>
+      <text x={147} y={109} fontFamily="ui-monospace, monospace" fontSize={4.6} fill="currentColor" opacity={0.85}>
         single thread
       </text>
     </g>
