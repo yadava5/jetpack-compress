@@ -33,20 +33,32 @@ export const BuildScaffold: React.FC = () => (
       <IsoCube origin={[3, -1.5, 4.6]} size={[4, 4, 1.8]} face={{ top: 0.08, left: 0.05, right: 0.03 }} strokeWidth={0.7} dashed dashPattern="2 2" />
     </g>
 
-    {/* labels */}
-    <text x={72} y={210} fontFamily="ui-monospace, monospace" fontSize={6} letterSpacing="1" fill={LINE} opacity={0.6}>
-      JDK 25
-    </text>
-    <text x={92} y={168} fontFamily="ui-monospace, monospace" fontSize={5.4} fill={LINE} opacity={0.55}>
-      mvn
-    </text>
+    {/* labels — leadered to their layers of the scaffold */}
+    <g opacity={0.75}>
+      <circle cx={66} cy={139} r={1.2} fill={LINE} />
+      <line x1={66} y1={139} x2={61} y2={133} stroke={LINE} strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+      <text x={58} y={131} textAnchor="end" fontFamily="ui-monospace, monospace" fontSize={6} letterSpacing="1" fill={LINE}>
+        JDK 25
+      </text>
+    </g>
+    <g opacity={0.7}>
+      <circle cx={79} cy={141} r={1} fill={LINE} />
+      <line x1={79} y1={141} x2={74} y2={146} stroke={LINE} strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+      <text x={71} y={149} textAnchor="end" fontFamily="ui-monospace, monospace" fontSize={5.4} fill={LINE}>
+        mvn
+      </text>
+    </g>
     <g style={{ color: SLATE }}>
       <text x={96} y={112} fontFamily="ui-monospace, monospace" fontSize={5.6} fontWeight={700} fill="currentColor">
         jar · CLI
       </text>
     </g>
-    <text x={168} y={120} fontFamily="ui-monospace, monospace" fontSize={5} fill={LINE} opacity={0.4}>
-      JMH · -Pbench
-    </text>
+    <g opacity={0.6}>
+      <circle cx={127} cy={138} r={1} fill={LINE} />
+      <line x1={127} y1={138} x2={163} y2={123} stroke={LINE} strokeWidth={0.5} strokeDasharray="3 2" opacity={0.6} />
+      <text x={166} y={121} fontFamily="ui-monospace, monospace" fontSize={5} fill={LINE}>
+        JMH · -Pbench
+      </text>
+    </g>
   </SceneFrame>
 );
