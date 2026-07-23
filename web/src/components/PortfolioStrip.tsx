@@ -20,7 +20,7 @@ export function PortfolioStrip() {
         <div className="proj-grid">
           {PROJECTS.map((p, i) => (
             <Reveal key={p.name} delay={(i % 3) * 70}>
-              <a className="card proj-card" href={p.href} target="_blank" rel="noreferrer noopener">
+              <a className="card proj-card" href={p.href} target="_blank" rel="noopener noreferrer">
                 <div className="proj-top">
                   <span className="dot dot-live" aria-hidden="true" />
                   <span className="proj-name">{p.name}</span>
@@ -37,12 +37,12 @@ export function PortfolioStrip() {
           <div className="footer-brand">
             <span className="mono">jetpack-compress</span>
             <span className="footer-sep">·</span>
-            <a href={SITE.repo} target="_blank" rel="noreferrer noopener" className="footer-link">
+            <a href={SITE.repo} target="_blank" rel="noopener noreferrer" className="footer-link">
               <GitHubIcon size={14} />
               yadava5/jetpack-compress
             </a>
             <span className="footer-sep">·</span>
-            <a href={SITE.systemCard} className="footer-link">
+            <a href={SITE.systemCard} className="footer-link" target="_blank" rel="noopener noreferrer">
               <BookIcon size={14} />
               System Card
             </a>
