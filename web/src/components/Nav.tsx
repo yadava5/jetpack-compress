@@ -18,17 +18,17 @@ export function Nav() {
           <a href="#solution">Solution</a>
           <a href="#inside">Inside</a>
           <a href="#proof">Proof</a>
-          <a href={SITE.app} className="nav-try">
+          <a href={SITE.app} className="nav-try" target="_blank" rel="noopener noreferrer">
             Try it
           </a>
         </nav>
 
         <div className="nav-actions">
-          <a className="nav-card" href={SITE.systemCard}>
+          <a className="nav-card" href={SITE.systemCard} target="_blank" rel="noopener noreferrer">
             <BookIcon size={14} />
             <span className="nav-card-label">System Card</span>
           </a>
-          <a className="btn nav-gh" href={SITE.repo} target="_blank" rel="noreferrer noopener">
+          <a className="btn nav-gh" href={SITE.repo} target="_blank" rel="noopener noreferrer">
             <GitHubIcon />
             <span className="nav-gh-label">GitHub</span>
           </a>
