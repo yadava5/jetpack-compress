@@ -83,15 +83,22 @@ export const HowFanout: React.FC = () => {
         </g>
       </g>
 
-      {/* labels */}
-      <text x={150} y={70} fontFamily="ui-monospace, monospace" fontSize={5.4} fill={LINE} opacity={0.55}>
-        vthread / block
-      </text>
+      {/* labels — each tied to its subject with a dot + dashed leader
+          (previously floated in the corners, detached from the art) */}
+      <g opacity={0.8}>
+        <circle cx={102} cy={137} r={1.2} fill={LINE} />
+        <line x1={102} y1={137} x2={80} y2={140} stroke={LINE} strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+        <text x={76} y={142} textAnchor="end" fontFamily="ui-monospace, monospace" fontSize={5.4} fill={LINE} opacity={0.75}>
+          vthread / block
+        </text>
+      </g>
       <g style={{ color: AMBER }}>
-        <text x={150} y={232} fontFamily="ui-monospace, monospace" fontSize={5.6} fontWeight={700} fill="currentColor">
+        <circle cx={99} cy={176} r={1.2} fill="currentColor" />
+        <line x1={99} y1={176} x2={118} y2={193} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 2" opacity={0.7} />
+        <text x={121} y={196} fontFamily="ui-monospace, monospace" fontSize={5.6} fontWeight={700} fill="currentColor">
           SYNC_FLUSH
         </text>
-        <text x={150} y={240} fontFamily="ui-monospace, monospace" fontSize={5.6} fontWeight={700} fill="currentColor">
+        <text x={121} y={204} fontFamily="ui-monospace, monospace" fontSize={5.6} fontWeight={700} fill="currentColor">
           → finish()
         </text>
       </g>
