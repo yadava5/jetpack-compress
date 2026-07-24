@@ -49,9 +49,8 @@ export function Hero() {
             </span>
           </h1>
           <p className="lead hero-lead">
-            {SITE.oneLiner} The novelty is the parallel framing and a hand-vectorized SIMD stage —{' '}
-            <span className="fg">not a new codec</span>. DEFLATE entropy coding is delegated to zlib
-            on purpose.
+            {SITE.oneLiner} The novelty is the parallel framing and a{' '}
+            <span className="fg">hand-vectorized SIMD stage</span>.
           </p>
 
           <div className="hero-badges">
@@ -80,8 +79,7 @@ export function Hero() {
             </a>
           </div>
           <p className="hero-cta-note mono">
-            Runs entirely in your browser via the native <span className="fg">CompressionStream</span>{' '}
-            — the same DEFLATE the engine delegates to. Nothing is uploaded.
+            Runs entirely in your browser — nothing is uploaded.
           </p>
         </Reveal>
 
