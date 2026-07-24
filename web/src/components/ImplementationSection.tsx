@@ -53,9 +53,8 @@ export function ImplementationSection() {
           }
           lead={
             <>
-              Every stage maps to a file. The parallel framing and one SIMD checksum are hand-written;
-              the DEFLATE entropy coding is delegated to zlib on purpose — and each card says which it
-              is, with no hand-waving about the difference.
+              Every stage maps to a file — hand-written or borrowed, each card says which it is,
+              with no hand-waving about the difference.
             </>
           }
         />
