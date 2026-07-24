@@ -793,36 +793,39 @@
   z-index: 1;
 }
 
-/* --- Signature ending flow-mark ----------------------------------- */
+/* --- Signature ending flow-mark: full-bleed bottom band ------------ */
+/* Bytes rain in across the whole width, collapse into eight parallel
+   chunk blocks, and the blocks sink into ONE continuous gzip member drawn
+   edge to edge along the page's bottom edge. A quiet shine sweeps the
+   member afterwards. The stage is clickable — clicking replays. */
 .ending {
   position: relative;
-  padding-block: clamp(72px, 12vw, 150px);
+  padding-block: clamp(64px, 9vw, 120px) 0;
   border-top: 1px solid var(--color-line);
   background: linear-gradient(180deg, transparent, rgba(255, 158, 44, 0.035));
   overflow: hidden;
 }
-.ending-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
+
 .ending-stage {
   position: relative;
   width: 100%;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: clamp(140px, 15vw, 180px);
+  cursor: pointer;
 }
+.ending-stage.reduced {
+  cursor: default;
+  height: clamp(90px, 10vw, 120px);
+}
+
+/* --- the byte rain -------------------------------------------------- */
 .efx-byte {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: var(--cx);
+  top: 30%;
   width: 9px;
   height: 9px;
   border-radius: 2px;
-  transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(1);
+  transform: translate(calc(-50% + var(--sx)), var(--sy)) scale(1);
   opacity: 0;
 }
 .efx-byte.amber {
@@ -837,28 +840,130 @@
 }
 @keyframes byte-collapse {
   0% {
-    transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(1);
+    transform: translate(calc(-50% + var(--sx)), var(--sy)) scale(1);
     opacity: 0;
   }
   22% {
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -50%) scale(0.35);
+    transform: translate(-50%, 74px) scale(0.35);
     opacity: 0;
   }
 }
 
+/* --- the eight parallel chunk blocks -------------------------------- */
+.efx-block {
+  position: absolute;
+  left: var(--bx);
+  bottom: 42px;
+  width: calc(100% / 8 - 8px);
+  margin-left: 4px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--color-faint);
+  border: 1px solid rgba(107, 165, 196, 0.45);
+  border-radius: 6px;
+  background: rgba(107, 165, 196, 0.07);
+  opacity: 0;
+}
+.ending-stage.play .efx-block {
+  animation:
+    block-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) var(--bd) forwards,
+    block-sink 0.55s cubic-bezier(0.5, 0, 0.4, 1) var(--sd) forwards;
+}
+.ending-stage.reduced .efx-block {
+  display: none;
+}
+@keyframes block-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes block-sink {
+  to {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+}
+
+/* --- one continuous gzip member, edge to edge ------------------------ */
+.efx-member {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 14px;
+  background: rgba(255, 158, 44, 0.14);
+  border-top: 1.5px solid var(--amber-line);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.ending-stage.play .efx-member {
+  animation: member-draw 1.15s cubic-bezier(0.45, 0, 0.2, 1) 1.55s forwards;
+}
+.ending-stage.reduced .efx-member {
+  transform: none;
+}
+@keyframes member-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+.efx-member-shine {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 14px;
+  width: 18%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 158, 44, 0.35),
+    transparent
+  );
+  opacity: 0;
+  transform: translateX(-110%);
+}
+.ending-stage.play .efx-member-shine {
+  opacity: 1;
+  animation: member-shine 3.4s linear 3.1s infinite;
+}
+@keyframes member-shine {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(660%);
+  }
+}
+
+/* --- the sign-off ---------------------------------------------------- */
+.ending-sign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding-inline: 20px;
+}
 .ending-mark {
-  width: clamp(76px, 12vw, 104px);
+  width: clamp(64px, 9vw, 92px);
   height: auto;
   opacity: 0;
   transform: scale(0.7);
 }
-.ending-stage.play .ending-mark {
-  animation: mark-in 0.8s 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.ending-sign.play .ending-mark {
+  animation: mark-in 0.8s 2.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-.ending-stage.reduced .ending-mark {
+.ending-sign.reduced .ending-mark {
   opacity: 1;
   transform: none;
 }
@@ -877,27 +982,19 @@
   stroke-dasharray: 60;
   stroke-dashoffset: 60;
 }
-.ending-stage.play .ending-glyph .gp {
-  animation: glyph-draw 0.6s 1s ease forwards;
+.ending-sign.play .ending-glyph .gp {
+  animation: glyph-draw 0.6s 2.7s ease forwards;
 }
-.ending-stage.play .ending-glyph .gp-arrow {
-  animation-delay: 1.16s;
+.ending-sign.play .ending-glyph .gp-arrow {
+  animation-delay: 2.86s;
 }
-.ending-stage.reduced .ending-glyph .gp {
+.ending-sign.reduced .ending-glyph .gp {
   stroke-dashoffset: 0;
 }
 @keyframes glyph-draw {
   to {
     stroke-dashoffset: 0;
   }
-}
-
-.ending-sign {
-  margin-top: 26px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
 }
 .ending-word {
   font-family: var(--font-display);
@@ -910,7 +1007,7 @@
   transform: translateY(12px);
 }
 .ending-sign.play .ending-word {
-  animation: sign-in 0.6s 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: sign-in 0.6s 2.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .ending-sign.reduced .ending-word,
 .ending-sign.reduced .ending-tag {
@@ -926,7 +1023,7 @@
   transform: translateY(10px);
 }
 .ending-sign.play .ending-tag {
-  animation: sign-in 0.6s 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: sign-in 0.6s 3.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes sign-in {
   to {
