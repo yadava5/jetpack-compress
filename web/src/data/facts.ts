@@ -19,7 +19,7 @@ export const SITE = {
   app: '/app',
   jdk: 'JDK 25',
   oneLiner:
-    'A high-throughput, gzip-compatible parallel compression engine. Input is split into blocks, DEFLATE-compressed concurrently on virtual threads, and stitched into a single, byte-valid gzip member that any tool decompresses.',
+    'A gzip-compatible parallel compression engine: blocks compress concurrently on virtual threads and stitch into one byte-valid gzip member any tool can decompress.',
 } as const
 
 /** The honest thesis — stated up front, repeated in the scope section. */
