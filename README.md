@@ -1,5 +1,21 @@
 # jetpack-compress
 
+> **Parallel, gzip-compatible compression on JDK 25** — blocks compress concurrently on virtual
+> threads and stitch into one byte-valid gzip member any tool can decompress.
+
+<p>
+  <img alt="JDK 25" src="https://img.shields.io/badge/JDK-25-orange">
+  <img alt="Build: Maven" src="https://img.shields.io/badge/build-Maven-C71A36">
+  <img alt="Tests: 72 passing" src="https://img.shields.io/badge/tests-72%20passing-brightgreen">
+  <img alt="Web: React 19 + Vite" src="https://img.shields.io/badge/web-React%2019%20%2B%20Vite-61DAFB">
+  <img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue">
+</p>
+
+**[Live site](https://jetpack-compress.vercel.app)** ·
+**[In-browser compressor](https://jetpack-compress.vercel.app/app)** ·
+**[System Card](https://jetpack-compress.vercel.app/system-card)** ·
+**[Source](https://github.com/yadava5/jetpack-compress)**
+
 A high-throughput, **gzip-compatible** parallel compression engine written in modern Java
 (JDK 25). It splits input into independent blocks, DEFLATE-compresses them concurrently on
 **virtual threads**, and stitches the results into a single, standard gzip stream that any tool
@@ -10,9 +26,12 @@ Memory API**, and **virtual threads**.
 > **Status:** compiles clean on JDK 25 and all **72 tests pass** (`Tests run: 72, Failures: 0,
 > Errors: 0, Skipped: 0`), including external-tool round-trips against the system `gzip(1)`.
 >
-> **Landing:** a self-contained web landing in [`web/`](web/) *visualizes* the engine — the parallel
-> pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches the table
-> below, error bars included). See [Web landing](#web-landing).
+> **Try it live:** the **[in-browser compressor](https://jetpack-compress.vercel.app/app)** is a
+> real, usable demo, and a self-contained web landing in [`web/`](web/) *visualizes* the engine —
+> the parallel pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches
+> the table below, error bars included). See [Web landing](#web-landing).
+>
+> 📄 **System Card** — [read the system card](https://jetpack-compress.vercel.app/system-card)
 
 ---
 
@@ -291,7 +310,21 @@ The deploy target is **Vercel with the project root set to `web/`** (`web/vercel
 
 ---
 
+## Author
+
+**Ayush Yadav** — sole author and maintainer.
+[github.com/yadava5](https://github.com/yadava5)
+
+Part of a set of independently branded portfolio projects — the web landing links out to
+**Glyph**, **Applied**, **Cadence**, **LifeQuest**, and **Agentic AutoML**.
+
+---
+
 ## License
 
-Personal portfolio project. No warranty. The DEFLATE codec is `java.util.zip` (zlib); the
-`crc32_combine` logic follows zlib's algorithm.
+Source-available under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**. Free to use, run,
+self-host, study, and modify for any **noncommercial** purpose. **Commercial use of any kind
+requires a separate commercial license** — contact **aesh.03.23@gmail.com**.
+
+Copyright © 2026 Ayush Yadav. Provided "as is", without warranty. The DEFLATE codec is
+`java.util.zip` (zlib); the `crc32_combine` logic follows zlib's algorithm.
