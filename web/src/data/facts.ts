@@ -273,28 +273,28 @@ export const INSIDE_NOTES = [ARCH_NOTES[2], ARCH_NOTES[3]] as const
 /** The portfolio strip — the interconnection across the live projects. */
 export const PROJECTS = [
   {
-    name: 'fast-mnist',
-    href: 'https://fast-mnist.vercel.app',
+    name: 'Glyph',
+    href: 'https://getglyph.vercel.app',
     desc: 'C++ SIMD neural net + web demo',
   },
   {
-    name: 'JobTracker',
-    href: 'https://jobtracker-web-five.vercel.app',
+    name: 'Applied',
+    href: 'https://getapplied.vercel.app',
     desc: 'Email-powered application tracker',
   },
   {
-    name: 'TaskFlow',
-    href: 'https://taskflow-calendar-ashy.vercel.app',
+    name: 'Cadence',
+    href: 'https://usecadenceapp.vercel.app',
     desc: 'Calendar + NLP task management',
   },
   {
     name: 'LifeQuest',
-    href: 'https://lifequest-sigma-fawn.vercel.app',
+    href: 'https://getlifequest.vercel.app',
     desc: 'Gamified routine tracker',
   },
   {
     name: 'Agentic AutoML',
-    href: 'https://agentic-automl.vercel.app',
+    href: 'https://agentic-automl-platform.vercel.app',
     desc: 'AI-augmented AutoML toolchain',
   },
   {
