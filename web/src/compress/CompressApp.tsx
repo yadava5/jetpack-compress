@@ -546,7 +546,7 @@ function HonestNotes() {
         </li>
       </ul>
       <div className="cx-notes-cta">
-        <a className="btn btn-card" href={SITE.systemCard}>
+        <a className="btn btn-card" href={SITE.systemCard} target="_blank" rel="noopener noreferrer">
           <BookIcon />
           Read the System Card
         </a>
