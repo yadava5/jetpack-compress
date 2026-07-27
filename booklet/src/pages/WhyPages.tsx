@@ -97,8 +97,8 @@ const CoreComparison: React.FC = () => {
         </span>
         <span style={{ fontFamily: FONTS.MONO, fontSize: 7, color: COLORS.INK_SUBTLE }}>schematic · 10-core Apple Silicon</span>
       </div>
-      <Row label="single-thread gzip" busy={1} right="1 / 10" rightSub="busy · 66.8 MB/s" rightColor={STEEL} />
-      <Row label="block-parallel · jetpack" busy={10} right="10 / 10" rightSub="busy · ~6.5× → §04" rightColor={COLORS.AMBER_DEEP} />
+      <Row label="single-thread gzip" busy={1} right="1 / 10" rightSub="busy · 66.2 MB/s" rightColor={STEEL} />
+      <Row label="block-parallel · jetpack" busy={10} right="10 / 10" rightSub="busy · 6.4× → §04" rightColor={COLORS.AMBER_DEEP} />
       <div style={{ borderTop: `0.5pt solid ${COLORS.HAIRLINE}`, paddingTop: 10, fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10.5, lineHeight: 1.35, color: COLORS.INK_MUTED }}>
         Same codec, same output — the speed-up is the nine cores gzip leaves parked, put to work.
       </div>
@@ -116,12 +116,12 @@ export const WhyFloorPage: React.FC<PageProps> = (p) => (
     {/* Reading the gap — two annotations flanking the chart's takeaway. */}
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, marginTop: 18, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}` }}>
       <div style={{ padding: "12px 16px 12px 0" }}>
-        <div style={{ fontFamily: FONTS.MONO, fontSize: 22, fontWeight: 700, color: STEEL, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>66.8 MB/s</div>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 22, fontWeight: 700, color: STEEL, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>66.2 MB/s</div>
         <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 5 }}>{WHY.floor.floorLabel}</div>
       </div>
       <div style={{ padding: "12px 0 12px 16px", borderLeft: `0.5pt solid ${COLORS.HAIRLINE}` }}>
         <div style={{ fontFamily: FONTS.MONO, fontSize: 22, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>+367.8 MB/s</div>
-        <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 5 }}>recovered by the block scheduler · ≈6.5× the floor (§04)</div>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 5 }}>recovered by the block scheduler · ≈6.4× the floor (§04)</div>
       </div>
     </div>
 

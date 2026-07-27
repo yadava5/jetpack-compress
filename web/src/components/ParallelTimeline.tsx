@@ -5,13 +5,13 @@ import { CountUp } from './CountUp'
 /**
  * Parallel compression as WALL-TIME, not a bar pair. The x-axis is time to compress
  * the same corpus: the single thread runs the whole width; the parallel workers each
- * finish in ~1/6.5 of it. The ±50% spread from the quick run is drawn as a real
+ * finish in ~1/6.4 of it. The ±5.0% confidence interval is drawn as a real
  * uncertainty band around the parallel finish — so the softness of the number is
  * visible, not hidden. Bars grow in on scroll; reduced motion shows them settled.
  */
 
-const single = COMPRESSION_BENCH.bars[0] // GZIPOutputStream, 66.8 MB/s
-const parallel = COMPRESSION_BENCH.bars[1] // block-parallel, 434.6 MB/s, ±50%
+const single = COMPRESSION_BENCH.bars[0] // GZIPOutputStream, 66.2 MB/s
+const parallel = COMPRESSION_BENCH.bars[1] // block-parallel, 422.0 MB/s, ±5.0%
 const err = 'errorPct' in parallel ? parallel.errorPct : 0
 
 // time is inversely proportional to throughput; express as a fraction of single-thread time
@@ -59,7 +59,7 @@ export function ParallelTimeline() {
             <span className="tl-sub">block-parallel on virtual threads · {parallel.mbps} MB/s</span>
           </div>
           <div className="tl-track tall">
-            {/* ±50% uncertainty band around the parallel finish */}
+            {/* ±5.0% confidence band around the parallel finish */}
             <div
               className="tl-band"
               style={{ left: pct(tFast), width: pct(tSlow - tFast) }}

@@ -203,7 +203,7 @@ export const HowVThreadsPage: React.FC<PageProps> = (p) => (
 /**
  * A unit (waffle) chart of the honest ceiling: virtual threads are spawned one
  * per block, by the dozens and nearly free; but the real parallelism is pinned
- * to the ~10 carrier threads ≈ 10 cores — which is exactly the measured ~6.5×.
+ * to the ~10 carrier threads ≈ 10 cores — which is exactly the measured 6.4×.
  */
 const CarrierCeiling: React.FC = () => {
   const VT = 40; // illustrative "many cheap vthreads" — schematic, not a count

@@ -4,7 +4,7 @@ import { SceneFrame, IsoCube, IsoPlane } from "./primitives";
 
 /**
  * PROOF — the measured bars. Four isometric throughput bars on a chart floor:
- * scalar vs vector (2.8×) and single-thread vs parallel (~6.5×). Green marks
+ * scalar vs vector (2.80×) and single-thread vs parallel (6.4×). Green marks
  * the two hero bars — the results actually measured. Bar heights are
  * proportional within each pair; the exact numbers live on the PROOF pages.
  */
@@ -52,7 +52,7 @@ export const ProofBars: React.FC = () => (
         2.8×
       </text>
       <text x={138} y={154} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={8} fontWeight={700} fill="currentColor">
-        ~6.5×
+        6.4×
       </text>
     </g>
     <text x={40} y={250} fontFamily="ui-monospace, monospace" fontSize={5} letterSpacing="1" fill={LINE} opacity={0.42}>

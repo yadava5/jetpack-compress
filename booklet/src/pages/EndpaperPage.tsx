@@ -6,7 +6,7 @@ import { ABSTRACT, BRAND, MASTHEAD } from "../content";
 /**
  * Welcome / endpaper (page 02). A quiet opening: the masthead kicker, a serif
  * "Welcome.", the ≤80-word abstract, and a three-fact strip that previews the
- * whole engine (72 tests, 2.8× SIMD, ~6.5× parallel) before chapter one.
+ * whole engine (72 tests, 2.80× SIMD, 6.4× parallel) before chapter one.
  */
 export const EndpaperPage: React.FC<{
   parity: "recto" | "verso";
@@ -104,7 +104,7 @@ export const EndpaperPage: React.FC<{
       >
         <Fact value="72" unit="tests green" note="incl. real gzip -t / gzip -dc" accent={COLORS.GREEN_DEEP} />
         <Fact value="2.8×" unit="SIMD" note="vector Adler-32 over scalar" accent={COLORS.AMBER_DEEP} first={false} />
-        <Fact value="~6.5×" unit="parallel" note="over single-thread gzip (±50%)" accent={COLORS.STEEL_DEEP} first={false} />
+        <Fact value="6.4×" unit="parallel" note="over single-thread gzip (99.9% CI ±5.0%)" accent={COLORS.STEEL_DEEP} first={false} />
       </div>
 
       {/* Kicker */}

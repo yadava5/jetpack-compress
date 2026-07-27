@@ -107,7 +107,7 @@ export const PAGES: readonly PageSpec[] = [
   {
     num: 17, kind: "divider", parity: "recto", sectionKey: "04_PROOF",
     chapterNum: "04", chapterTitle: "PROOF",
-    subtitle: "2.8× measured · ~6.5× on a quick run · 72 green · byte-valid gzip",
+    subtitle: "2.80× measured · 6.4× · 72 green · byte-valid gzip",
     chapterIndex: 4, chapterTotal: 5,
   },
   { num: 18, kind: "body", parity: "verso", sectionKey: "04_PROOF", body: "proof-simd" },
