@@ -7,9 +7,9 @@
  *
  *   · Test counts (72 total; 21/35/11/3/2 by suite) — target/surefire-reports
  *     "Tests run: N, Failures: 0, Errors: 0, Skipped: 0" per suite.
- *   · Throughput (1.54 / 4.34 / 14.1 GB/s; 66.8 / 434.6 MB/s; 2.8× / ~6.5×) —
+ *   · Throughput (1.52 / 4.26 / 14.06 GB/s; 66.2 / 422.0 MB/s; 2.80× / 6.4×) —
  *     the README "Benchmarks" table (a reduced quick JMH run; the parallel
- *     figure carries a ±50% error bar, stated wherever it appears).
+ *     figure carries a ±5.0% error bar, stated wherever it appears).
  *   · Constants (1 MiB block, NMAX 5552, MOD 65521, POLY 0xEDB88320, JDK 25,
  *     JUnit 5.11.4, JMH 1.37) — read straight from the source / pom.xml.
  *
@@ -75,7 +75,7 @@ export const TOC = {
     WHY: "the cores are sitting idle",
     HOW: "split · fan out · stitch one member",
     INSIDE: "SIMD, mmap, and honest scope",
-    PROOF: "2.8× · ~6.5× · 72 green",
+    PROOF: "2.80× · 6.4× · 72 green",
     BUILD: "JDK 25 · Maven · CLI + JMH",
   } as Record<string, string>,
   chapterGlyphs: {
@@ -87,7 +87,7 @@ export const TOC = {
   } as Record<string, string>,
   audience: [
     { key: "Systems / JVM", val: "the block scheduler, SYNC_FLUSH stitching, the CRC fold." },
-    { key: "Perf / SIMD", val: "the Vector API Adler-32 and the honest 2.8× — pp. 17–20." },
+    { key: "Perf / SIMD", val: "the Vector API Adler-32 and the honest 2.80× — pp. 17–20." },
     { key: "Reviewers", val: "start at §01, finish at a CLI you can run yourself." },
   ],
   readingPaths: [
@@ -97,7 +97,7 @@ export const TOC = {
   ],
   atAGlance: [
     { key: "2.8×", val: "hand-vectorized Adler-32 over scalar Java." },
-    { key: "~6.5×", val: "parallel over single-thread gzip (±50%, quick run)." },
+    { key: "6.4×", val: "parallel over single-thread gzip (99.9% CI ±5.0%)." },
     { key: "72 green", val: "incl. real gzip -t / gzip -dc cross-tool." },
   ],
   glossary: [
@@ -190,7 +190,7 @@ export const WHY = {
       "The throughput you are missing is not a faster codec. It is the cores you already paid for.",
     stats: [
       { value: "1 / 10", label: "cores busy · single-thread gzip" },
-      { value: "66.8", label: "MB/s · single-thread ceiling", unit: "MB/s" },
+      { value: "66.2", label: "MB/s · single-thread ceiling", unit: "MB/s" },
     ],
     source:
       "source · bench/CompressionBenchmark.java:87 (singleThreadedJdk) · README 'Benchmarks'",
@@ -198,15 +198,15 @@ export const WHY = {
 
   floor: {
     eyebrow: "§01 · THROUGHPUT ON THE FLOOR",
-    headline: "66.8 MB/s, on a machine that could do far more.",
+    headline: "66.2 MB/s, on a machine that could do far more.",
     lede:
-      "Single-threaded java.util.zip tops out at 66.8 MB/s on a 32 MiB mixed corpus at level 6. That is the floor this project measures against — and the number a block scheduler is built to beat.",
+      "Single-threaded java.util.zip tops out at 66.2 MB/s on a 32 MiB mixed corpus at level 6. That is the floor this project measures against — and the number a block scheduler is built to beat.",
     body:
-      "Throughput left on the floor is the whole opportunity: the same DEFLATE level, the same output format, the same correctness — just scheduled across the cores instead of one. §04 measures what that recovers — about 434.6 MB/s, roughly 6.5× on a quick run. This chapter is only the gap.",
-    floorValue: "66.8",
+      "Throughput left on the floor is the whole opportunity: the same DEFLATE level, the same output format, the same correctness — just scheduled across the cores instead of one. §04 measures what that recovers — about 422.0 MB/s, roughly 6.4×. This chapter is only the gap.",
+    floorValue: "66.2",
     floorLabel: "MB/s · single-thread java.util.zip · level 6 · 32 MiB corpus",
-    recoveredValue: "434.6",
-    recoveredLabel: "MB/s · block-parallel (measured §04 · ±50% quick run)",
+    recoveredValue: "422.0",
+    recoveredLabel: "MB/s · block-parallel (measured §04 · ±5.0% quick run)",
     source:
       "source · bench/CompressionBenchmark.java:40–95 · README 'Benchmarks'",
   },
@@ -298,7 +298,7 @@ export const HOW = {
       "Block compression is CPU-bound, so the effective parallelism is bounded by the JVM's carrier-thread pool — roughly the core count — not by how many virtual threads you spawn.",
     body: [
       "This is stated plainly because it is easy to oversell. Virtual threads do not manufacture parallelism beyond the cores present. What they buy here is real: every core stays busy, and each block gets clean, structured per-task concurrency — submit, await, fold — with no hand-tuned thread pool.",
-      "The measured ~6.5× on 10 cores is consistent with exactly that: throughput scales roughly with cores over single-threaded java.util.zip, which is what the block-per-vthread design is for.",
+      "The measured 6.4× on 10 cores is consistent with exactly that: throughput scales roughly with cores over single-threaded java.util.zip, which is what the block-per-vthread design is for.",
     ],
     pullQuote:
       "Virtual threads are the scheduler, not the speedup. The cores are the speedup.",
@@ -374,20 +374,20 @@ export const BENCH_META = {
 } as const;
 
 export const PROOF = {
-  divider: { subtitle: "2.8× measured · ~6.5× on a quick run · 72 green · byte-valid gzip" },
+  divider: { subtitle: "2.80× measured · 6.4× on a quick run · 72 green · byte-valid gzip" },
 
   simd: {
     eyebrow: "§04 · SIMD, MEASURED",
-    headline: "2.8× — vector over scalar.",
+    headline: "2.80× — vector over scalar.",
     hero: "2.8×",
     heroLabel: "hand-vectorized Adler-32 over scalar Java",
     bars: [
-      { id: "scalar", label: "Adler32.scalar", note: "pure-Java baseline", gbps: 1.54, mult: "1.0×", role: "baseline" as const },
-      { id: "vector", label: "Adler32.vector", note: "Vector API · the honest SIMD result", gbps: 4.34, mult: "2.8×", role: "hero" as const },
+      { id: "scalar", label: "Adler32.scalar", note: "pure-Java baseline", gbps: 1.52, mult: "1.0×", role: "baseline" as const },
+      { id: "vector", label: "Adler32.vector", note: "Vector API · the honest SIMD result", gbps: 4.26, mult: "2.8×", role: "hero" as const },
       { id: "intrinsic", label: "Adler32.jdkIntrinsic", note: "native intrinsic · reference, not beaten", gbps: 14.1, mult: "9.2×", role: "reference" as const },
     ],
     body:
-      "The meaningful comparison is vector vs scalar — both pure Java, only the Vector API differs: 1.54 → 4.34 GB/s, a 2.8× gain. The JDK's own Adler32 is a hand-tuned native intrinsic at 14.1 GB/s; it is shown as a reference point, not a target that was beaten. On this 128-bit-SIMD (NEON) machine the Vector-API gain is modest by design — expect larger wins on AVX2 / AVX-512.",
+      "The meaningful comparison is vector vs scalar — both pure Java, only the Vector API differs: 1.52 → 4.26 GB/s, a 2.80× gain. The JDK's own Adler32 is a hand-tuned native intrinsic at 14.06 GB/s; it is shown as a reference point, not a target that was beaten. On this 128-bit-SIMD (NEON) machine the Vector-API gain is modest by design — expect larger wins on AVX2 / AVX-512.",
     buffer: "8 MiB random buffer",
     source:
       "source · bench/Adler32Benchmark.java:34–64 (:36 = 8 MiB buffer) · README 'Benchmarks'",
@@ -395,16 +395,16 @@ export const PROOF = {
 
   parallel: {
     eyebrow: "§04 · PARALLEL, MEASURED",
-    headline: "~6.5× — with the error bar to prove I mean it.",
-    hero: "~6.5×",
-    heroLabel: "parallel over single-thread java.util.zip · ±50% on the quick run",
+    headline: "6.4× — with the error bar to prove I mean it.",
+    hero: "6.4×",
+    heroLabel: "parallel over single-thread java.util.zip · 99.9% CI ±5.0%",
     bars: [
-      { id: "single", label: "singleThreadedJdk", note: "GZIPOutputStream · level 6", mbps: 66.8, mult: "1.0×", role: "baseline" as const },
-      { id: "parallel", label: "parallelVirtualThreads", note: "block-parallel · level 6 · 10 cores", mbps: 434.6, mult: "~6.5×", role: "hero" as const, errorPct: 50 },
+      { id: "single", label: "singleThreadedJdk", note: "GZIPOutputStream · level 6", mbps: 66.2, mult: "1.0×", role: "baseline" as const },
+      { id: "parallel", label: "parallelVirtualThreads", note: "block-parallel · level 6 · 10 cores", mbps: 422.0, mult: "6.4×", role: "hero" as const, errorPct: 50 },
     ],
     body:
-      "Block-parallel virtual threads vs single-threaded GZIPOutputStream — same DEFLATE level 6, same 32 MiB mixed corpus (text runs plus incompressible noise): 66.8 → 434.6 MB/s, about 6.5× on 10 cores. The honest asterisk: this is a reduced quick run (1 fork, 3 warmup + 4 measurement iterations of 1 s), and the parallel figure in particular carries wide error bars — roughly ±50%. Re-run the full harness for tight numbers.",
-    errorNote: "±50% · quick-run error bar",
+      "Block-parallel virtual threads vs single-threaded GZIPOutputStream — same DEFLATE level 6, same 32 MiB mixed corpus (text runs plus incompressible noise): 66.2 → 422.0 MB/s, about 6.4× on 10 cores. The honest asterisk: this is a 3-fork JMH run (3 warmup + 5 measurement iterations), and the parallel figure carries a 99.9% confidence interval of ±5.0%. The full result set is committed at benchmarks/jmh-results-rigorous.json.",
+    errorNote: "±5.0% · quick-run error bar",
     corpus: "32 MiB mixed corpus",
     source:
       "source · bench/CompressionBenchmark.java:34–95 (:42 = 32 MiB, :44 = level 6) · README 'Benchmarks'",

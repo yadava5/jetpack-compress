@@ -99,7 +99,7 @@ export const BENCH_META = {
   jvm: 'OpenJDK 25.0.3 (Homebrew)',
   harness: 'JMH 1.37 · throughput mode · Score = bytes/second',
   caveat:
-    'Reduced quick run: 1 fork, 3 warmup + 4 measurement iterations of 1 s. Indicative, not rigorous. The parallel-compression figure in particular has wide error bars (±50%) on a quick run.',
+    '3 JMH forks, 3 warmup + 5 measurement iterations. 99.9% confidence intervals span ±0.7% (single-threaded) to ±6.9% (the vectorised checksum). Committed at benchmarks/jmh-results-rigorous.json.',
 } as const
 
 /**
@@ -113,7 +113,7 @@ export const ADLER_BENCH = {
       id: 'scalar',
       label: 'Adler32.scalar',
       note: 'pure Java baseline',
-      gbps: 1.54,
+      gbps: 1.52,
       mult: 1.0,
       role: 'baseline' as const,
     },
@@ -121,7 +121,7 @@ export const ADLER_BENCH = {
       id: 'vector',
       label: 'Adler32.vector',
       note: 'Vector API — the honest SIMD result',
-      gbps: 4.34,
+      gbps: 4.26,
       mult: 2.8,
       role: 'hero' as const,
     },
@@ -147,7 +147,7 @@ export const COMPRESSION_BENCH = {
       id: 'single',
       label: 'singleThreadedJdk',
       note: 'GZIPOutputStream, level 6',
-      mbps: 66.8,
+      mbps: 66.2,
       mult: 1.0,
       role: 'baseline' as const,
     },
@@ -155,14 +155,14 @@ export const COMPRESSION_BENCH = {
       id: 'parallel',
       label: 'parallelVirtualThreads',
       note: 'block-parallel, level 6, 10 cores',
-      mbps: 434.6,
+      mbps: 422.0,
       mult: 6.5,
       role: 'hero' as const,
       errorPct: 50,
     },
   ],
-  headline: '~6.5×',
-  headlineSub: 'parallel over single-thread · ±50% on the quick run',
+  headline: '6.4×',
+  headlineSub: 'parallel over single-thread · 99.9% CI ±5.0%',
   corpus: '32 MiB mixed corpus (text runs + incompressible noise)',
 } as const
 
@@ -242,7 +242,7 @@ export const CLI = {
  * ------------------------------------------------------------------ *
  * NARRATIVE — the storytelling spine that threads the page.
  * Copy only; every number it cites is derived from the verified
- * benchmarks above (10 cores + 66.8 MB/s single-thread from BENCH_META
+ * benchmarks above (10 cores + 66.2 MB/s single-thread from BENCH_META
  * and COMPRESSION_BENCH). No new claims are introduced here.
  * ------------------------------------------------------------------ */
 
@@ -260,7 +260,7 @@ export const PROBLEM = {
   cores: 10, // Apple M1 Pro (arm64) · 10 cores — see BENCH_META.machine
   active: 1, // a single-threaded DEFLATE loop occupies one
   idle: 9,
-  singleMbps: COMPRESSION_BENCH.bars[0].mbps, // 66.8 MB/s single-thread baseline
+  singleMbps: COMPRESSION_BENCH.bars[0].mbps, // 66.2 MB/s single-thread baseline
   activeLabel: 'gzip · one DEFLATE loop',
   idleLabel: 'idle',
 } as const

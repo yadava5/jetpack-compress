@@ -205,11 +205,11 @@ Numbers below are **real, measured on this machine**, not estimates:
 
 | Benchmark | Score | ≈ Throughput | Takeaway |
 |---|---:|---:|---|
-| `Adler32.scalar` (pure Java) | 1.54e9 B/s | **1.54 GB/s** | scalar baseline |
-| `Adler32.vector` (Vector API) | 4.34e9 B/s | **4.34 GB/s** | **2.8x over scalar** — the honest SIMD result |
-| `Adler32.jdkIntrinsic` (`java.util.zip.Adler32`) | 1.41e10 B/s | 14.1 GB/s | native intrinsic reference point (not beaten) |
-| `Compression.singleThreadedJdk` (level 6) | 6.68e7 B/s | **66.8 MB/s** | single-thread `GZIPOutputStream` |
-| `Compression.parallelVirtualThreads` (level 6) | 4.35e8 B/s | **434.6 MB/s** | **~6.5x over single-thread** (10 cores; ±50% on quick run) |
+| `Adler32.scalar` (pure Java) | 1.518e9 B/s | **1.52 GB/s** | scalar baseline |
+| `Adler32.vector` (Vector API) | 4.257e9 B/s | **4.26 GB/s** | **2.80x over scalar** — the honest SIMD result |
+| `Adler32.jdkIntrinsic` (`java.util.zip.Adler32`) | 1.406e10 B/s | **14.06 GB/s** | native intrinsic reference point (not beaten) |
+| `Compression.singleThreadedJdk` (level 6) | 6.617e7 B/s | **66.2 MB/s** | single-thread `GZIPOutputStream` |
+| `Compression.parallelVirtualThreads` (level 6) | 4.220e8 B/s | **422.0 MB/s** | **6.4x over single-thread** (10 cores; 99.9% CI ±5.0%) |
 
 **Interpretation, honestly:** the meaningful SIMD comparison is *vector vs scalar Java* (2.8x) —
 both are pure Java and only the Vector API differs. The JDK's `Adler32` is a hand-tuned native
@@ -287,7 +287,7 @@ jetpack-compress/
 A self-contained single-page landing lives in [`web/`](web/), built with **Vite + React 19 +
 TypeScript** (Tailwind for layout). It is evidence-forward: it *visualizes* the engine rather than
 describing it, and every number on the page is read from one module (`web/src/data/facts.ts`) that
-mirrors this README — the 2.8× SIMD result, the ~6.5× parallel result (±50% on the quick run), the 72
+mirrors this README — the 2.80× SIMD result, the 6.4× parallel result (99.9% CI ±5.0%), the 72
 tests, and the honest "DEFLATE is delegated to zlib" scope are all stated plainly.
 
 Three real, animated visuals:
@@ -296,8 +296,8 @@ Three real, animated visuals:
    virtual-thread workers, and stitching (`SYNC_FLUSH`) back into a single gzip member.
 2. **SIMD lanes** — scalar (1 byte/step) vs vectorized Adler-32 (16-byte NEON stride) racing, landing
    on the measured **2.8×** (not 16×, and not against the JDK intrinsic).
-3. **Benchmark bars** — the 2.8× and ~6.5× figures, each scoped to what it measures, with the JDK
-   intrinsic shown as a "not beaten" reference and a ±50% error whisker on the quick-run parallel number.
+3. **Benchmark bars** — the 2.80× and 6.4× figures, each scoped to what it measures, with the JDK
+   intrinsic shown as a "not beaten" reference and a ±5.0% error whisker on the quick-run parallel number.
 
 ```bash
 cd web

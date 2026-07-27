@@ -68,7 +68,7 @@ const Lollipop: React.FC<{ rows: LolliRow[]; max: number }> = ({ rows, max }) =>
               {r.role === "hero" && (
                 <>
                   <rect x={x(r.value) + 14} y={y - 10} width={116} height={20} rx={10} fill={COLORS.AMBER_TINT} stroke={COLORS.AMBER_DEEP} strokeWidth={0.8} />
-                  <text x={x(r.value) + 72} y={y + 4} textAnchor="middle" fontFamily={monoP} fontSize={9} fontWeight={700} fill={COLORS.AMBER_DEEP}>▲ 2.8× vs scalar</text>
+                  <text x={x(r.value) + 72} y={y + 4} textAnchor="middle" fontFamily={monoP} fontSize={9} fontWeight={700} fill={COLORS.AMBER_DEEP}>▲ 2.80× vs scalar</text>
                 </>
               )}
               {ref && (
@@ -93,7 +93,7 @@ const Lollipop: React.FC<{ rows: LolliRow[]; max: number }> = ({ rows, max }) =>
 
 /**
  * Radial gauge — the parallel multiple as a speedometer. The needle reads the
- * measured ~6.5×; the translucent arc band spans the honest ±50% quick-run
+ * measured 6.4×; the translucent arc band spans the honest ±5.0% quick-run
  * error (3.25× → 9.75×). A distinct form from the SIMD-page lollipop, and it
  * carries its own error bar visibly.
  */
@@ -102,7 +102,7 @@ const SpeedGauge: React.FC = () => {
   const cy = 196;
   const R = 150;
   const MAX = 10;
-  const value = 6.5;
+  const value = 6.4;
   const errLo = value * 0.5;
   const errHi = value * 1.5;
   // value fraction → point on the top semicircle (y grows down)
@@ -122,7 +122,7 @@ const SpeedGauge: React.FC = () => {
       <svg viewBox="0 0 600 236" width="100%" style={{ display: "block", overflow: "visible" }}>
         {/* full track */}
         <path d={arc(0, 1, R)} fill="none" stroke={COLORS.SURFACE} strokeWidth={9} strokeLinecap="round" />
-        {/* ±50% error band */}
+        {/* ±5.0% error band */}
         <path d={arc(errLo / MAX, errHi / MAX, R)} fill="none" stroke={COLORS.AMBER} strokeOpacity={0.22} strokeWidth={17} />
         {/* value arc 0 → 6.5 */}
         <path d={arc(0, value / MAX, R)} fill="none" stroke={COLORS.AMBER_DEEP} strokeWidth={9} strokeLinecap="round" />
@@ -147,24 +147,24 @@ const SpeedGauge: React.FC = () => {
             </g>
           );
         })}
-        {/* needle + hub — the needle reads ~6.5× (Hero + chips carry the number) */}
+        {/* needle + hub — the needle reads 6.4× (Hero + chips carry the number) */}
         <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={COLORS.INK} strokeWidth={2.4} strokeLinecap="round" />
         <circle cx={cx} cy={cy} r={6} fill={COLORS.INK} />
         <circle cx={cx} cy={cy} r={2.4} fill={COLORS.PAPER} />
         {/* band legend */}
         <text x={cx} y={cy + 26} textAnchor="middle" fontFamily={monoP} fontSize={8} fill={COLORS.INK_MUTED}>
-          shaded band = ±50% quick-run error (3.25× – 9.75×)
+          shaded band = ±5.0% quick-run error (3.25× – 9.75×)
         </text>
       </svg>
       {/* underlying throughputs */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, marginTop: 6, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}` }}>
         <div style={{ padding: "10px 16px 10px 0" }}>
-          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.STEEL_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>66.8 MB/s</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.STEEL_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>66.2 MB/s</div>
           <div style={{ fontFamily: FONTS.MONO, fontSize: 8, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 4 }}>singleThreadedJdk · 1.0×</div>
         </div>
         <div style={{ padding: "10px 0 10px 16px", borderLeft: `0.5pt solid ${COLORS.HAIRLINE}` }}>
-          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>434.6 MB/s</div>
-          <div style={{ fontFamily: FONTS.MONO, fontSize: 8, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 4 }}>parallelVirtualThreads · ~6.5× · 10 cores</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 18, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>422.0 MB/s</div>
+          <div style={{ fontFamily: FONTS.MONO, fontSize: 8, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 4 }}>parallelVirtualThreads · 6.4× · 10 cores</div>
         </div>
       </div>
     </div>
@@ -181,7 +181,7 @@ const BenchMeta: React.FC = () => (
 
 // ── pages ───────────────────────────────────────────────────────────────────
 
-/** Page 18 — 2.8× vector over scalar (lollipop). */
+/** Page 18 — 2.80× vector over scalar (lollipop). */
 export const ProofSimdPage: React.FC<PageProps> = (p) => {
   const max = 15;
   const rows: LolliRow[] = PROOF.simd.bars.map((b) => ({
@@ -206,7 +206,7 @@ export const ProofSimdPage: React.FC<PageProps> = (p) => {
 /**
  * The benchmark environment (left) and how to read the modest NEON gain
  * (right). Every value is BENCH_META / PROOF.simd — the honest context that
- * lets a reader judge the 2.8× rather than take it on faith.
+ * lets a reader judge the 2.80× rather than take it on faith.
  */
 const BenchEnvironment: React.FC = () => {
   const rows = [
@@ -253,7 +253,7 @@ const BenchEnvironment: React.FC = () => {
   );
 };
 
-/** Page 19 — ~6.5× parallel over single-thread (radial gauge with ±50% band). */
+/** Page 19 — 6.4× parallel over single-thread (radial gauge with ±5.0% band). */
 export const ProofParallelPage: React.FC<PageProps> = (p) => (
   <BodyPage {...p} sectionLabel="PROOF" sectionColor={GREEN} eyebrow={PROOF.parallel.eyebrow} headline={PROOF.parallel.headline}>
     <Hero value={PROOF.parallel.hero} label={PROOF.parallel.heroLabel} color={COLORS.AMBER_DEEP} />
