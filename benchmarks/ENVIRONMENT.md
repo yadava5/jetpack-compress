@@ -1,7 +1,7 @@
 # Benchmark environment
 
 The machine the committed JMH results in this directory were measured on. The README's numbers
-carry a `±50%` style caveat precisely because throughput is a property of *this* box, not of the
+carry a `±5.0%` style caveat precisely because throughput is a property of *this* box, not of the
 code alone — so treat everything below as part of the result, not as trivia.
 
 Recorded: 2026-07-27.

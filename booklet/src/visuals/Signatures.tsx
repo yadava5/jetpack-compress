@@ -110,13 +110,13 @@ export const VThreadFanout: React.FC = () => {
 // ── Signature 2 · scalar-vs-vector SIMD lanes ───────────────────────────────
 
 export const SimdLanes: React.FC = () => {
-  // Fill proportions are the measured GB/s (1.54 vs 4.34), normalized to the
+  // Fill proportions are the measured GB/s (1.52 vs 4.26), normalized to the
   // vector bar = full track. The intrinsic is PROOF-page territory; here the
   // point is only scalar-lane vs vector-lane mechanism → 2.8×.
   const trackX0 = 92;
   const trackX1 = 560;
   const trackW = trackX1 - trackX0;
-  const scalarFrac = 1.54 / 4.34;
+  const scalarFrac = 1.52 / 4.26;
   return (
     <div style={CARD}>
       <CardHead label="scalar vs vector · Adler-32" accent={COLORS.COPPER_DEEP} source="VectorizedAdler32.java · Adler32Benchmark" />
@@ -132,7 +132,7 @@ export const SimdLanes: React.FC = () => {
         })}
         <rect x={trackX0} y={42} width={trackW * scalarFrac} height={26} rx={5} fill={COLORS.STEEL} fillOpacity={0.28} />
         <rect x={trackX0 + trackW * scalarFrac - 2} y={42} width={2.5} height={26} fill={COLORS.STEEL_DEEP} />
-        <text x={trackX0 + trackW * scalarFrac + 8} y={59} fontFamily={mono} fontSize={9} fontWeight={700} fill={COLORS.STEEL_DEEP}>1.54 GB/s</text>
+        <text x={trackX0 + trackW * scalarFrac + 8} y={59} fontFamily={mono} fontSize={9} fontWeight={700} fill={COLORS.STEEL_DEEP}>1.52 GB/s</text>
 
         {/* VECTOR lane */}
         <text x={trackX0} y={104} fontFamily={mono} fontSize={8.5} fontWeight={700} fill={COLORS.AMBER_DEEP}>VECTOR</text>
@@ -145,7 +145,7 @@ export const SimdLanes: React.FC = () => {
         })}
         <rect x={trackX0} y={112} width={trackW} height={26} rx={5} fill={COLORS.AMBER} fillOpacity={0.24} />
         <rect x={trackX1 - 2} y={112} width={2.5} height={26} fill={COLORS.AMBER_DEEP} />
-        <text x={trackX0 + 12} y={129} fontFamily={mono} fontSize={9} fontWeight={700} fill={COLORS.AMBER_DEEP}>4.34 GB/s</text>
+        <text x={trackX0 + 12} y={129} fontFamily={mono} fontSize={9} fontWeight={700} fill={COLORS.AMBER_DEEP}>4.26 GB/s</text>
 
         {/* the multiple */}
         <rect x={trackX0} y={158} width={148} height={30} rx={6} fill={COLORS.AMBER_TINT} stroke={COLORS.AMBER_DEEP} strokeWidth={1} />
