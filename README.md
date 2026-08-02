@@ -198,9 +198,11 @@ Numbers below are **real, measured on this machine**, not estimates:
 - OpenJDK **25.0.3** (Homebrew)
 - JMH 1.37, throughput mode, `@OperationsPerInvocation` = buffer size, so **Score is bytes/second**
 
-> ⚠️ These come from a **reduced quick run** (1 fork, 3 warmup + 4 measurement iterations of 1 s).
-> They are indicative. The parallel-compression figure in particular has wide error bars on a quick
-> run; re-run with the full harness for rigorous numbers. On a 128-bit-SIMD machine the Vector API
+> These are the **rigorous run** — 3 forks, 3x2 s warmup, 5x2 s measurement — committed verbatim at
+> `benchmarks/jmh-results-rigorous.json`, which carries its own fork and iteration counts so you can
+> check that sentence against the file. The quick 1-fork run is committed beside it at
+> `benchmarks/jmh-results.json` and reads higher on the parallel figure (454.9 MB/s, 6.89x); the
+> table below deliberately quotes the slower, tighter one. On a 128-bit-SIMD machine the Vector API
 > gain is modest by design — expect larger vectorized-Adler wins on AVX2/AVX-512 (32/64-byte stride).
 
 | Benchmark | Score | ≈ Throughput | Takeaway |
@@ -223,10 +225,10 @@ target that was beaten. The parallel compressor scales roughly with cores over s
 # Build the benchmark uber-jar (JMH lives behind the `bench` profile; the default build never touches it)
 mvn -q -Pbench -DskipTests package
 
-# Quick run (what the table above used)
+# Quick run (committed at benchmarks/jmh-results.json — NOT the table above)
 java --add-modules=jdk.incubator.vector -jar target/benchmarks.jar -f 1 -wi 3 -i 4 -w 1 -r 1
 
-# Rigorous run (slower, tight error bars)
+# Rigorous run (slower, tight error bars) — this is what the table above quotes
 java --add-modules=jdk.incubator.vector -jar target/benchmarks.jar
 
 # Just one benchmark class
@@ -297,7 +299,7 @@ Three real, animated visuals:
 2. **SIMD lanes** — scalar (1 byte/step) vs vectorized Adler-32 (16-byte NEON stride) racing, landing
    on the measured **2.8×** (not 16×, and not against the JDK intrinsic).
 3. **Benchmark bars** — the 2.80× and 6.4× figures, each scoped to what it measures, with the JDK
-   intrinsic shown as a "not beaten" reference and a ±5.0% error whisker on the quick-run parallel number.
+   intrinsic shown as a "not beaten" reference and a ±5.0% error whisker on the rigorous-run parallel number (21.1 / 422.0 = 5.00%; the quick run's own whisker is 4.88% on a different score).
 
 ```bash
 cd web

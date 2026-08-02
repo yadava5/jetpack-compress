@@ -6,7 +6,7 @@ machine-readable run instead of a transcribed console session.
 
 | File | What it is |
 |---|---|
-| `jmh-results.json` | **Quick run** — 1 fork, 3x1 s warmup, 4x1 s measurement. The exact configuration the top-level README's table documents. |
+| `jmh-results.json` | **Quick run** — 1 fork, 3x1 s warmup, 4x1 s measurement. NOT what the top-level README's table quotes; that table is the rigorous run below. |
 | `jmh-results-rigorous.json` | **Rigorous run** — 3 forks, 3x2 s warmup, 5x2 s measurement. Tighter error bars; use this one when the quick run's spread matters. |
 | `ENVIRONMENT.md` | The machine, JDK, and measurement conditions. Read it before comparing against your own numbers. |
 
