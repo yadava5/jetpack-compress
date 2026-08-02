@@ -1,0 +1,84 @@
+name: CI
+
+# This repository had no CI at all.
+#
+# Its README carries the line "Tests run: 72, Failures: 0, Errors: 0", and that
+# figure is cited off-repo as evidence the suite passes. Until now the only
+# thing standing behind it was the README itself plus an untracked
+# target/surefire-reports directory on one laptop — so the claim was prose
+# about a run, not a run.
+#
+# This workflow makes the number reproducible by anyone: it compiles on the
+# JDK the pom actually requires and publishes the surefire XML, which is where
+# the count comes from.
+#
+# The benchmarks are deliberately NOT run here. Throughput is a property of the
+# machine — benchmarks/ENVIRONMENT.md records the exact box the committed JMH
+# results were measured on, and a shared CI runner would produce a different
+# number that looks like a correction and is not one.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Compile and test on JDK 25
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pom.xml sets <maven.compiler.release>25</maven.compiler.release> and the
+      # Vector API work needs --add-modules=jdk.incubator.vector, so the JDK
+      # version here is load-bearing rather than a default.
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Report the toolchain
+        run: |
+          java -version
+          mvn -version
+
+      - name: Compile
+        run: mvn -B -q compile
+
+      - name: Test
+        run: mvn -B -DskipTests=false test
+
+      # The count the README quotes comes from these files. Summing them in CI
+      # means "72 tests, 0 failures" is checkable from a run record rather than
+      # from a sentence someone wrote after a run.
+      - name: Summarise the suite
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          t = f = e = s = 0
+          for p in glob.glob("target/surefire-reports/*.xml"):
+              r = ET.parse(p).getroot()
+              t += int(r.get("tests", 0));    f += int(r.get("failures", 0))
+              e += int(r.get("errors", 0));   s += int(r.get("skipped", 0))
+          print(f"Tests run: {t}, Failures: {f}, Errors: {e}, Skipped: {s}")
+          assert f == 0 and e == 0, "the suite did not pass clean"
+          assert t > 0, "no tests were collected — a green run that ran nothing is not a pass"
+          PY
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: error
