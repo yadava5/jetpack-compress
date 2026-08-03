@@ -239,6 +239,32 @@ java --add-modules=jdk.incubator.vector -jar target/benchmarks.jar Adler32
 
 ## Correctness / testing
 
+`mvn verify` runs the 72 tests **and** writes a JaCoCo report. Measured on
+2026-08-03:
+
+| Package | Line coverage |
+| --- | ---: |
+| `com.ayush.jetpack.vector` | **98.9%** |
+| `com.ayush.jetpack.core` | 87.3% |
+| `com.ayush.jetpack.io` | 84.2% |
+| `com.ayush.jetpack.cli` | 0.0% |
+| **Total** | **68.1%** lines · 55.9% branches |
+
+The blended 68.1% is the least informative number in that table. The `vector`
+package is the reason this project exists and it sits at 98.9%; what drags the
+average down is an untested CLI argument parser. "68% covered" and "the hot path
+is at 99% and the CLI shim is untested" describe the same measurement and imply
+very different amounts of work.
+
+CI regenerates the report on every push and fails below a 55% floor — set
+deliberately *below* the measured value, because a gate pinned at the current
+number turns every honest refactor red. What it guards is a collapse (the
+coverage agent silently detaching and reporting near zero), not a two-point drift.
+
+Supply-chain checks run alongside: CodeQL, full-history secret scanning, and
+[OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/yadava5/jetpack-compress),
+which is computed and published by a third party rather than self-reported.
+
 `mvn test` runs 72 tests:
 
 - **`RoundTripTest`** — `decompress(compress(x)) == x` across empty / 1-byte / boundary-length /
