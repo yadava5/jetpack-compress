@@ -23,6 +23,20 @@
              (jdk.incubator.vector) is an incubating module, so it must be added explicitly at
              compile time AND at run time (surefire, exec, JMH fork). -->
         <incubator.vector.arg>--add-modules=jdk.incubator.vector</incubator.vector.arg>
+
+        <!-- JaCoCo injects its agent by setting a property that surefire reads as
+             argLine. Surefire's argLine here is already spoken for by the Vector
+             flag above, and a plain <argLine>${argLine} ...</argLine> is the
+             classic way this breaks: on any build that does NOT run jacoco:
+             prepare-agent, ${argLine} is unset and surefire is handed the literal
+             string, which fails the JVM.
+
+             So jacoco writes to its own property, declared empty here, and
+             surefire concatenates it with @{...} late replacement. `mvn test`
+             alone leaves it empty and works; `mvn verify` fills it in. Both are
+             exercised below. -->
+        <jacoco.argLine/>
+        <jacoco.version>0.8.13</jacoco.version>
     </properties>
 
     <dependencies>
@@ -56,9 +70,43 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <!-- The test JVM must also resolve the incubating Vector module. -->
-                    <argLine>${incubator.vector.arg}</argLine>
+                    <!-- The test JVM must also resolve the incubating Vector module.
+                         @{jacoco.argLine} is surefire's LATE replacement syntax: it is
+                         expanded when the test JVM is forked, by which time
+                         jacoco:prepare-agent has had a chance to set it. With ${...}
+                         it would be expanded at POM load, before jacoco runs, and the
+                         agent would silently never attach — producing a coverage
+                         report of 0% that looks like a testing problem. -->
+                    <argLine>@{jacoco.argLine} ${incubator.vector.arg}</argLine>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <!-- Line and branch coverage. `mvn verify` writes
+                     target/site/jacoco/jacoco.xml and a browsable HTML report. -->
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Do NOT let this default to `argLine`; surefire's is
+                                 already in use for the Vector module flag. -->
+                            <propertyName>jacoco.argLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

@@ -55,7 +55,10 @@ jobs:
         run: mvn -B -q compile
 
       - name: Test
-        run: mvn -B -DskipTests=false test
+        # `verify` rather than `test` so jacoco:report runs and coverage is
+        # regenerated on every push. A coverage figure that only ever existed on
+        # one laptop is not evidence of anything.
+        run: mvn -B -DskipTests=false verify -DskipITs
 
       # The count the README quotes comes from these files. Summing them in CI
       # means "72 tests, 0 failures" is checkable from a run record rather than
@@ -75,10 +78,59 @@ jobs:
           assert t > 0, "no tests were collected — a green run that ran nothing is not a pass"
           PY
 
+      # Coverage, read from jacoco.xml rather than from the HTML a human would
+      # skim. The floor is deliberately below the measured value: pinning a gate
+      # AT the current number turns every honest refactor red, and a gate that
+      # cries wolf gets deleted. What is being guarded is a collapse — coverage
+      # tooling silently detaching and reporting near-zero — not a two-point drift.
+      - name: Summarise coverage
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+
+          root = ET.parse("target/site/jacoco/jacoco.xml").getroot()
+
+          def counters(node):
+              return {c.get("type"): (int(c.get("covered")), int(c.get("missed")))
+                      for c in node.findall("counter")}
+
+          overall = counters(root)
+          line_cov, line_missed = overall["LINE"]
+          total = line_cov + line_missed
+          pct = 100 * line_cov / total
+
+          print(f"Lines: {line_cov}/{total} = {pct:.1f}%")
+          br_cov, br_missed = overall.get("BRANCH", (0, 0))
+          if br_cov + br_missed:
+              print(f"Branches: {br_cov}/{br_cov + br_missed} = {100 * br_cov / (br_cov + br_missed):.1f}%")
+
+          for p in sorted(root.findall("package"), key=lambda p: p.get("name")):
+              c = counters(p)
+              if "LINE" in c:
+                  cov, miss = c["LINE"]
+                  print(f"  {p.get('name'):<40} {100 * cov / (cov + miss):5.1f}%")
+
+          FLOOR = 55.0
+          if total == 0:
+              sys.exit("FAIL: jacoco recorded no lines at all — the agent did not attach")
+          if pct < FLOOR:
+              sys.exit(f"FAIL: line coverage {pct:.1f}% fell below the {FLOOR}% floor")
+          print(f"OK: {pct:.1f}% is at or above the {FLOOR}% floor")
+          PY
+
       - name: Upload surefire reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
           path: target/surefire-reports/
+          if-no-files-found: error
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
           if-no-files-found: error
