@@ -44,7 +44,7 @@ jobs:
         # anything. Without a build the database is empty and the analysis
         # succeeds while having examined nothing.
         if: ${{ matrix.language == 'java-kotlin' }}
-        uses: github/codeql-action/autobuild@95e58e9a2cdfd71adc6e0353d5c52f41a045d225
+        uses: github/codeql-action/autobuild@5595ccaf912efad79be6eef63a5619ff05969be3
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225
