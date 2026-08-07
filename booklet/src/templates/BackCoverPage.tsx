@@ -1,6 +1,6 @@
 import React from "react";
 import { COLORS, FONTS } from "../theme";
-import { BACK_COVER } from "../content";
+import { BACK_COVER, BRAND } from "../content";
 import { CoverField } from "../visuals/CoverField";
 
 /**
@@ -127,7 +127,8 @@ export const BackCoverPage: React.FC = () => (
           color: COLORS.ON_DARK,
         }}
       >
-        jetpack<span style={{ color: COLORS.AMBER }}>-compress</span>
+        {BRAND.wordmarkHead}
+        <span style={{ color: COLORS.AMBER }}>{BRAND.wordmarkTail}</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <span style={{ width: 44, height: 1, background: COLORS.ON_DARK_HAIRLINE }} />

@@ -92,19 +92,21 @@ const Lollipop: React.FC<{ rows: LolliRow[]; max: number }> = ({ rows, max }) =>
 };
 
 /**
- * Radial gauge — the parallel multiple as a speedometer. The needle reads the
- * measured 6.4×; the translucent arc band spans the honest ±5.0% quick-run
- * error (3.25× → 9.75×). A distinct form from the SIMD-page lollipop, and it
- * carries its own error bar visibly.
+ * Radial gauge — the parallel multiple as a dial from 0× to 10×, where 10× is
+ * ideal linear scaling on the 10-core bench box, so the needle reads how much
+ * of that ideal the scheduler recovers. The ±5.0% CI is drawn twice, at two
+ * honest scales: true-to-scale on the arc (a capped sliver — the interval IS
+ * small), and magnified below on its own fully labelled 6.0×–6.8× axis so the
+ * endpoints are readable. Same band, same number, no exaggerated sweep.
  */
 const SpeedGauge: React.FC = () => {
   const cx = 300;
-  const cy = 196;
-  const R = 150;
+  const cy = 168;
+  const R = 138;
   const MAX = 10;
   const value = 6.4;
-  const errLo = value * 0.5;
-  const errHi = value * 1.5;
+  const errLo = value * 0.95;
+  const errHi = value * 1.05;
   // value fraction → point on the top semicircle (y grows down)
   const pt = (t: number, r: number) => {
     const phi = (Math.PI * (1 - t)); // t=0 → π (left), t=1 → 0 (right)
@@ -116,16 +118,34 @@ const SpeedGauge: React.FC = () => {
     return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
   };
   const ticks = [0, 2, 4, 6, 8, 10];
-  const [nx, ny] = pt(value / MAX, R - 34);
+  const [nx, ny] = pt(value / MAX, R - 32);
+  // magnified CI strip — its own labelled axis, symmetric about the value
+  const DLO = 6.0;
+  const DHI = 6.8;
+  const DX0 = 150;
+  const DX1 = 450;
+  const DY = 232;
+  const dx = (v: number) => DX0 + ((v - DLO) / (DHI - DLO)) * (DX1 - DX0);
+  // ink whisker cap, shared by the arc band and the strip
+  const cap = (x1: number, y1: number, x2: number, y2: number) => (
+    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COLORS.INK} strokeWidth={1.1} />
+  );
   return (
     <div style={{ maxWidth: "6.4in" }}>
-      <svg viewBox="0 0 600 236" width="100%" style={{ display: "block", overflow: "visible" }}>
+      <svg viewBox="0 0 600 268" width="100%" style={{ display: "block", overflow: "visible" }}>
         {/* full track */}
         <path d={arc(0, 1, R)} fill="none" stroke={COLORS.SURFACE} strokeWidth={9} strokeLinecap="round" />
-        {/* ±5.0% error band */}
-        <path d={arc(errLo / MAX, errHi / MAX, R)} fill="none" stroke={COLORS.AMBER} strokeOpacity={0.22} strokeWidth={17} />
-        {/* value arc 0 → 6.5 */}
+        {/* ±5.0% band, true to scale — small on purpose; magnified strip below */}
+        <path d={arc(errLo / MAX, errHi / MAX, R)} fill="none" stroke={COLORS.AMBER} strokeOpacity={0.22} strokeWidth={16} />
+        {/* value arc 0 → 6.4 */}
         <path d={arc(0, value / MAX, R)} fill="none" stroke={COLORS.AMBER_DEEP} strokeWidth={9} strokeLinecap="round" />
+        {/* band whisker caps — bound the sliver so it reads as an interval */}
+        {(() => { const [ax1, ay1] = pt(errLo / MAX, R - 10); const [ax2, ay2] = pt(errLo / MAX, R + 10); const [bx1, by1] = pt(errHi / MAX, R - 10); const [bx2, by2] = pt(errHi / MAX, R + 10); return (
+          <>
+            {cap(ax1, ay1, ax2, ay2)}
+            {cap(bx1, by1, bx2, by2)}
+          </>
+        ); })()}
         {/* baseline 1× notch */}
         {(() => { const [bx, by] = pt(1 / MAX, R + 6); const [bx2, by2] = pt(1 / MAX, R - 9); return (
           <>
@@ -147,14 +167,29 @@ const SpeedGauge: React.FC = () => {
             </g>
           );
         })}
+        {/* what 10× means — the dial's ceiling is the core count, not a round number */}
+        <text x={cx + R + 17} y={cy + 14} textAnchor="end" fontFamily={monoP} fontSize={7} fontWeight={600} fill={COLORS.SLATE_DEEP}>= ideal linear · 10 cores</text>
         {/* needle + hub — the needle reads 6.4× (Hero + chips carry the number) */}
         <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={COLORS.INK} strokeWidth={2.4} strokeLinecap="round" />
         <circle cx={cx} cy={cy} r={6} fill={COLORS.INK} />
         <circle cx={cx} cy={cy} r={2.4} fill={COLORS.PAPER} />
-        {/* band legend */}
-        <text x={cx} y={cy + 26} textAnchor="middle" fontFamily={monoP} fontSize={8} fill={COLORS.INK_MUTED}>
-          shaded band = ±5.0% quick-run error (3.25× – 9.75×)
-        </text>
+        {/* magnified strip — the arc band again, on a readable axis */}
+        <text x={DX0} y={206} fontFamily={monoP} fontSize={8} fontWeight={700} letterSpacing="0.1em" fill={COLORS.AMBER_DEEP}>THE SHADED BAND, MAGNIFIED</text>
+        <text x={DX1} y={206} textAnchor="end" fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_MUTED}>99.9% CI · ±5.0%</text>
+        <line x1={DX0} y1={DY} x2={DX1} y2={DY} stroke={COLORS.HAIRLINE_STRONG} strokeWidth={0.7} />
+        <line x1={DX0} y1={DY - 3} x2={DX0} y2={DY + 3} stroke={COLORS.HAIRLINE_STRONG} strokeWidth={0.7} />
+        <line x1={DX1} y1={DY - 3} x2={DX1} y2={DY + 3} stroke={COLORS.HAIRLINE_STRONG} strokeWidth={0.7} />
+        <rect x={dx(errLo)} y={DY - 10} width={dx(errHi) - dx(errLo)} height={20} fill={COLORS.AMBER} fillOpacity={0.22} />
+        {cap(dx(errLo), DY - 11, dx(errLo), DY + 11)}
+        {cap(dx(errHi), DY - 11, dx(errHi), DY + 11)}
+        {/* needle-weight centre mark at the measured value */}
+        <line x1={dx(value)} y1={DY - 15} x2={dx(value)} y2={DY + 15} stroke={COLORS.INK} strokeWidth={2.4} />
+        {/* one label row: axis ends subtle, CI ends amber, value ink */}
+        <text x={DX0} y={DY + 24} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE} style={{ fontVariantNumeric: "tabular-nums" }}>6.0×</text>
+        <text x={dx(errLo)} y={DY + 24} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.AMBER_DEEP} style={{ fontVariantNumeric: "tabular-nums" }}>6.1×</text>
+        <text x={dx(value)} y={DY + 24} textAnchor="middle" fontFamily={monoP} fontSize={8.5} fontWeight={700} fill={COLORS.INK} style={{ fontVariantNumeric: "tabular-nums" }}>6.4×</text>
+        <text x={dx(errHi)} y={DY + 24} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fontWeight={700} fill={COLORS.AMBER_DEEP} style={{ fontVariantNumeric: "tabular-nums" }}>6.7×</text>
+        <text x={DX1} y={DY + 24} textAnchor="middle" fontFamily={monoP} fontSize={7.5} fill={COLORS.INK_SUBTLE} style={{ fontVariantNumeric: "tabular-nums" }}>6.8×</text>
       </svg>
       {/* underlying throughputs */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, marginTop: 6, borderTop: `1pt solid ${COLORS.INK}`, borderBottom: `0.5pt solid ${COLORS.HAIRLINE}` }}>
@@ -266,10 +301,10 @@ export const ProofParallelPage: React.FC<PageProps> = (p) => (
     <div style={{ marginTop: 10 }}>
       <BenchMeta />
     </div>
-    <Callout label="why the error bar is this wide" accent={GREEN} style={{ marginTop: 16 }}>
-      A quick run trades precision for speed — one fork, three warmup and four one-second measurement iterations.
-      That is enough to show the shape of the win, not to pin the exact multiple; the shaded band is that honesty made
-      visible. Re-run the full JMH harness for a tight number.
+    <Callout label="the error bar, honestly" accent={GREEN} style={{ marginTop: 16 }}>
+      This is the rigorous run — 3 forks, 3×2 s warmup, 5×2 s measurement, committed at
+      benchmarks/jmh-results-rigorous.json — and the shaded band is its 99.9% confidence interval of ±5.0%. The
+      quicker 1-fork run reads higher; this page quotes the slower, tighter number on purpose.
     </Callout>
     <SourceRail extra={BENCH_META.quickRun}>{PROOF.parallel.source}</SourceRail>
   </BodyPage>

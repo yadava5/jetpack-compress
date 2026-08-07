@@ -18,7 +18,7 @@ export function ProofSection() {
               The numbers, and exactly what <span className="accent">they mean.</span>
             </>
           }
-          lead="Real JMH throughput from a reduced quick run on this machine — each figure scoped to what it measures, error bars shown where a number is soft. Then the part that actually matters: it is provably still gzip."
+          lead="Real JMH throughput from a rigorous run on this machine — 3 forks, 3 warmup and 5 measurement iterations — each figure scoped to what it measures, error bars shown where a number is soft. Then the part that actually matters: it is provably still gzip."
         />
 
         <div style={{ display: 'grid', gap: 20 }}>

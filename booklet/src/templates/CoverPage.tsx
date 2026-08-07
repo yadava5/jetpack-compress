@@ -37,7 +37,7 @@ export const CoverPage: React.FC = () => (
         color: COLORS.ON_DARK_MUTED,
       }}
     >
-      jetpack-compress · System Card
+      {BRAND.name} · System Card
     </div>
 
     {/* Semantic legend — top-right, establishes the color language up front. */}
@@ -132,7 +132,8 @@ export const CoverPage: React.FC = () => (
           color: COLORS.ON_DARK,
         }}
       >
-        jetpack<span style={{ color: COLORS.AMBER }}>-compress</span>
+        {BRAND.wordmarkHead}
+        <span style={{ color: COLORS.AMBER }}>{BRAND.wordmarkTail}</span>
       </div>
       <div
         style={{

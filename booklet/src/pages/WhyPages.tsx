@@ -120,7 +120,7 @@ export const WhyFloorPage: React.FC<PageProps> = (p) => (
         <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 5 }}>{WHY.floor.floorLabel}</div>
       </div>
       <div style={{ padding: "12px 0 12px 16px", borderLeft: `0.5pt solid ${COLORS.HAIRLINE}` }}>
-        <div style={{ fontFamily: FONTS.MONO, fontSize: 22, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>+367.8 MB/s</div>
+        <div style={{ fontFamily: FONTS.MONO, fontSize: 22, fontWeight: 700, color: COLORS.AMBER_DEEP, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>+355.8 MB/s</div>
         <div style={{ fontFamily: FONTS.MONO, fontSize: 8.5, letterSpacing: "0.04em", color: COLORS.INK_MUTED, marginTop: 5 }}>recovered by the block scheduler · ≈6.4× the floor (§04)</div>
       </div>
     </div>
@@ -175,7 +175,7 @@ const CorpusMakeup: React.FC = () => {
  * read as distance, not length.
  */
 const ThroughputGap: React.FC<{ floor: number; recovered: number }> = ({ floor, recovered }) => {
-  const scaleMax = 470;
+  const scaleMax = 435; // 422.0 lands at ~97% of track — tight, honest headroom
   const X0 = 74;
   const X1 = 556;
   const Y = 74;

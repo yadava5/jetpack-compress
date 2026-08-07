@@ -7,7 +7,10 @@ import puppeteer from "puppeteer";
 import { mkdirSync } from "node:fs";
 
 const URL = process.env.BOOKLET_URL ?? "http://localhost:5182";
-const OUT = process.env.SHOOT_OUT ?? "/private/tmp/claude-501/-Users-ayush-Documents-Projects/5f0cfaf9-ac65-4c28-ac01-fe049c6956f5/scratchpad/shots";
+// Repo-local by default. This used to point at one session's shared scratchpad,
+// which meant a partial run left another project's PNGs sitting in the output
+// directory under this project's filenames -- two readers were misled by that.
+const OUT = process.env.SHOOT_OUT ?? new URL("../.shots", import.meta.url).pathname;
 const only = process.argv[2] ? new Set(process.argv[2].split(",").map(Number)) : null;
 
 mkdirSync(OUT, { recursive: true });

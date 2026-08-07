@@ -8,8 +8,8 @@
  *   · Test counts (72 total; 21/35/11/3/2 by suite) — target/surefire-reports
  *     "Tests run: N, Failures: 0, Errors: 0, Skipped: 0" per suite.
  *   · Throughput (1.52 / 4.26 / 14.06 GB/s; 66.2 / 422.0 MB/s; 2.80× / 6.4×) —
- *     the README "Benchmarks" table (a reduced quick JMH run; the parallel
- *     figure carries a ±5.0% error bar, stated wherever it appears).
+ *     the README "Benchmarks" table (the rigorous JMH run — 3 forks; the parallel
+ *     figure carries a 99.9% CI ±5.0% error bar, stated wherever it appears).
  *   · Constants (1 MiB block, NMAX 5552, MOD 65521, POLY 0xEDB88320, JDK 25,
  *     JUnit 5.11.4, JMH 1.37) — read straight from the source / pom.xml.
  *
@@ -27,6 +27,11 @@
 
 export const BRAND = {
   name: "jetpack-compress",
+  // Two-tone wordmark split — covers tint the "-compress" in amber. Kept in
+  // content (not hardcoded in templates) so a rename can never strand an old
+  // brand string in the TSX.
+  wordmarkHead: "jetpack",
+  wordmarkTail: "-compress",
   subtitle: "Parallel gzip on virtual threads — byte-for-byte real gzip.",
   author: "Ayush Yadav",
   year: "2026",
@@ -206,7 +211,7 @@ export const WHY = {
     floorValue: "66.2",
     floorLabel: "MB/s · single-thread java.util.zip · level 6 · 32 MiB corpus",
     recoveredValue: "422.0",
-    recoveredLabel: "MB/s · block-parallel (measured §04 · ±5.0% quick run)",
+    recoveredLabel: "MB/s · block-parallel (measured §04 · 99.9% CI ±5.0%)",
     source:
       "source · bench/CompressionBenchmark.java:40–95 · README 'Benchmarks'",
   },
@@ -370,11 +375,11 @@ export const BENCH_META = {
   machine: "Apple Silicon (arm64) · 10 cores · 128-bit NEON, 16-byte stride",
   jvm: "OpenJDK 25.0.3 (Homebrew)",
   harness: "JMH 1.37 · throughput mode · Score = bytes/second",
-  quickRun: "reduced quick run · 1 fork · 3 warmup + 4 measurement iters × 1 s",
+  quickRun: "rigorous run · 3 forks · 3×2 s warmup + 5×2 s measurement",
 } as const;
 
 export const PROOF = {
-  divider: { subtitle: "2.80× measured · 6.4× on a quick run · 72 green · byte-valid gzip" },
+  divider: { subtitle: "2.80× measured · 6.4× (99.9% CI) · 72 green · byte-valid gzip" },
 
   simd: {
     eyebrow: "§04 · SIMD, MEASURED",
@@ -384,7 +389,7 @@ export const PROOF = {
     bars: [
       { id: "scalar", label: "Adler32.scalar", note: "pure-Java baseline", gbps: 1.52, mult: "1.0×", role: "baseline" as const },
       { id: "vector", label: "Adler32.vector", note: "Vector API · the honest SIMD result", gbps: 4.26, mult: "2.8×", role: "hero" as const },
-      { id: "intrinsic", label: "Adler32.jdkIntrinsic", note: "native intrinsic · reference, not beaten", gbps: 14.1, mult: "9.2×", role: "reference" as const },
+      { id: "intrinsic", label: "Adler32.jdkIntrinsic", note: "native intrinsic · reference, not beaten", gbps: 14.06, mult: "9.3×", role: "reference" as const },
     ],
     body:
       "The meaningful comparison is vector vs scalar — both pure Java, only the Vector API differs: 1.52 → 4.26 GB/s, a 2.80× gain. The JDK's own Adler32 is a hand-tuned native intrinsic at 14.06 GB/s; it is shown as a reference point, not a target that was beaten. On this 128-bit-SIMD (NEON) machine the Vector-API gain is modest by design — expect larger wins on AVX2 / AVX-512.",
@@ -400,11 +405,11 @@ export const PROOF = {
     heroLabel: "parallel over single-thread java.util.zip · 99.9% CI ±5.0%",
     bars: [
       { id: "single", label: "singleThreadedJdk", note: "GZIPOutputStream · level 6", mbps: 66.2, mult: "1.0×", role: "baseline" as const },
-      { id: "parallel", label: "parallelVirtualThreads", note: "block-parallel · level 6 · 10 cores", mbps: 422.0, mult: "6.4×", role: "hero" as const, errorPct: 50 },
+      { id: "parallel", label: "parallelVirtualThreads", note: "block-parallel · level 6 · 10 cores", mbps: 422.0, mult: "6.4×", role: "hero" as const, errorPct: 5 },
     ],
     body:
       "Block-parallel virtual threads vs single-threaded GZIPOutputStream — same DEFLATE level 6, same 32 MiB mixed corpus (text runs plus incompressible noise): 66.2 → 422.0 MB/s, about 6.4× on 10 cores. The honest asterisk: this is a 3-fork JMH run (3 warmup + 5 measurement iterations), and the parallel figure carries a 99.9% confidence interval of ±5.0%. The full result set is committed at benchmarks/jmh-results-rigorous.json.",
-    errorNote: "±5.0% · quick-run error bar",
+    errorNote: "99.9% CI · ±5.0%",
     corpus: "32 MiB mixed corpus",
     source:
       "source · bench/CompressionBenchmark.java:34–95 (:42 = 32 MiB, :44 = level 6) · README 'Benchmarks'",

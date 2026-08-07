@@ -237,7 +237,7 @@ const CarrierCeiling: React.FC = () => {
             ))}
           </div>
           <div style={{ fontFamily: FONTS.MONO, fontSize: 13, fontWeight: 700, color: COLORS.INK, marginTop: 8, fontVariantNumeric: "tabular-nums" }}>
-            ≈6.5<span style={{ fontSize: 10 }}>×</span> <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10, fontWeight: 400, color: COLORS.INK_MUTED }}>the measured ceiling</span>
+            ≈6.4<span style={{ fontSize: 10 }}>×</span> <span style={{ fontFamily: FONTS.SERIF, fontStyle: "italic", fontSize: 10, fontWeight: 400, color: COLORS.INK_MUTED }}>the measured ceiling</span>
           </div>
         </div>
       </div>

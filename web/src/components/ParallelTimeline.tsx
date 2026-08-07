@@ -36,7 +36,7 @@ export function ParallelTimeline() {
           <CountUp value={parallel.mult} decimals={1} prefix="~" suffix="×" />
         </span>
         <span className="viz-cap" style={{ fontSize: '0.82rem' }}>
-          faster to compress the same corpus · <span style={{ color: 'var(--color-muted)' }}>±{err}% on the quick run</span>
+          faster to compress the same corpus · <span style={{ color: 'var(--color-muted)' }}>±{err}% · 99.9% CI</span>
         </span>
       </div>
 
@@ -89,8 +89,8 @@ export function ParallelTimeline() {
       </div>
 
       <p className="viz-cap" style={{ marginTop: 16 }}>
-        Same DEFLATE level 6 on a {COMPRESSION_BENCH.corpus}. The band is the ±{err}% spread on the
-        quick run — indicative, not rigorous.
+        Same DEFLATE level 6 on a {COMPRESSION_BENCH.corpus}. The band is the ±{err}% 99.9%
+        confidence interval over 3 JMH forks.
       </p>
     </div>
   )
