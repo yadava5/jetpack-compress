@@ -31,7 +31,10 @@ Memory API**, and **virtual threads**.
 > the parallel pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches
 > the table below, error bars included). See [Web landing](#web-landing).
 >
-> 📄 **System Card** — [read the system card](https://jetpack-compress.vercel.app/system-card)
+> 📄 **[System Card](https://jetpack-compress.vercel.app/system-card)**
+>
+> **Portfolio:** jetpack-compress is one of six projects, all presented at
+> [yadava5.github.io/Portfolio-2.0](https://yadava5.github.io/Portfolio-2.0/).
 
 ---
 
