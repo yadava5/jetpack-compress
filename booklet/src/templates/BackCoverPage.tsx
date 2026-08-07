@@ -2,14 +2,17 @@ import React from "react";
 import { COLORS, FONTS } from "../theme";
 import { BACK_COVER, BRAND } from "../content";
 import { CoverField } from "../visuals/CoverField";
+import { JetpackMark } from "../visuals/Mark";
 
 /**
  * Back cover (page 24) — a PURE closing that bookends the front cover. It
  * reuses the front cover's pipeline field (reseeded + dimmed as a wraparound),
  * echoes the cover's wordmark and its "one member · every core" margin motif,
- * and lands on one quiet closing line. There is deliberately NO QR, URL, or
- * CTA here: the reader was sent to the live product on the Try-It page (23);
- * the very last page just closes the book, the way a real book's last page does.
+ * and lands on one quiet closing line, the project's mark riding beside the
+ * wordmark the way it crests the title on the front. There is deliberately NO
+ * QR, URL, or CTA here: the reader was sent to the live product on the Try-It
+ * page (23); the very last page just closes the book, the way a real book's
+ * last page does.
  */
 export const BackCoverPage: React.FC = () => (
   <section
@@ -74,7 +77,22 @@ export const BackCoverPage: React.FC = () => (
       </span>
     </div>
 
-    {/* Vertical margin motif — right edge (mirrors the cover's callout) */}
+    {/* Scrim behind the closing block (identical to the cover's) */}
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: "3.6in",
+        background: `linear-gradient(to top, ${COLORS.GROUND} 14%, rgba(10,11,13,0.86) 48%, rgba(10,11,13,0) 100%)`,
+        pointerEvents: "none",
+      }}
+    />
+
+    {/* Vertical margin motif — right edge (mirrors the cover's callout).
+        Painted AFTER the scrim, same as the cover: stacked below, the fade
+        band swallowed its lower half. */}
     <div
       style={{
         position: "absolute",
@@ -92,19 +110,6 @@ export const BackCoverPage: React.FC = () => (
       {BACK_COVER.motif}
     </div>
 
-    {/* Scrim behind the closing block (identical to the cover's) */}
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: "3.6in",
-        background: `linear-gradient(to top, ${COLORS.GROUND} 14%, rgba(10,11,13,0.86) 48%, rgba(10,11,13,0) 100%)`,
-        pointerEvents: "none",
-      }}
-    />
-
     {/* Closing block — lower-left, mirrors the cover's title block */}
     <div
       style={{
@@ -117,33 +122,37 @@ export const BackCoverPage: React.FC = () => (
         gap: 14,
       }}
     >
-      <div
-        style={{
-          fontFamily: FONTS.MONO,
-          fontSize: 40,
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 0.98,
-          color: COLORS.ON_DARK,
-        }}
-      >
-        {BRAND.wordmarkHead}
-        <span style={{ color: COLORS.AMBER }}>{BRAND.wordmarkTail}</span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <span style={{ width: 44, height: 1, background: COLORS.ON_DARK_HAIRLINE }} />
-        <span
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* the mark rides beside the wordmark — the cover crest, at rest */}
+        <JetpackMark height={30} />
+        <div
           style={{
-            fontFamily: FONTS.SERIF,
-            fontStyle: "italic",
-            fontSize: 17,
-            lineHeight: 1.25,
-            color: COLORS.ON_DARK_MUTED,
+            fontFamily: FONTS.MONO,
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
+            lineHeight: 0.98,
+            color: COLORS.ON_DARK,
           }}
         >
-          {BACK_COVER.closingLine}
-        </span>
+          {BRAND.wordmarkHead}
+          <span style={{ color: COLORS.AMBER }}>{BRAND.wordmarkTail}</span>
+        </div>
       </div>
+      {/* No hairline rule here — the closing line already opens with an
+          em-dash, and a rule in front of it printed as a stuttered double
+          dash. The line stands alone. */}
+      <span
+        style={{
+          fontFamily: FONTS.SERIF,
+          fontStyle: "italic",
+          fontSize: 19,
+          lineHeight: 1.25,
+          color: COLORS.ON_DARK_MUTED,
+        }}
+      >
+        {BACK_COVER.closingLine}
+      </span>
     </div>
   </section>
 );
