@@ -1,0 +1,88 @@
+version: 2
+
+# One entry per ecosystem that actually exists in this tree. Dependabot silently
+# ignores a directory with no manifest, so an over-broad config looks configured
+# and updates nothing — each directory below was checked against a real
+# manifest file:
+#
+#   /          pom.xml
+#   /web       package.json + package-lock.json   (this is the deployed app)
+#   /booklet   package.json + package-lock.json   (builds the System Card)
+#   actions    .github/workflows/*.yml
+#
+# Weekly rather than daily: this is a small project with a single maintainer,
+# and a queue of PRs nobody can review is worse than a slightly older lockfile.
+
+updates:
+  # ---- Java library at the repository root -------------------------------
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+    labels:
+      - dependencies
+      - java
+
+  # ---- The deployed Vite SPA ---------------------------------------------
+  - package-ecosystem: npm
+    directory: "/web"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+    labels:
+      - dependencies
+      - web
+    groups:
+      # React, its DOM renderer and their types have to move together; three
+      # separate PRs for one upgrade is three red builds.
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+      # Build tooling churns on its own schedule and is safe to batch.
+      build-tooling:
+        patterns:
+          - vite
+          - vitest
+          - "@vitejs/*"
+          - "@tailwindcss/*"
+          - tailwindcss
+          - typescript
+
+  # ---- The System Card booklet (PDF/print build, not deployed) ------------
+  - package-ecosystem: npm
+    directory: "/booklet"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: build
+    labels:
+      - dependencies
+      - booklet
+
+  # ---- The workflows themselves ------------------------------------------
+  # codeql.yml, gitleaks.yml and scorecard.yml pin their actions by commit SHA.
+  # Dependabot understands SHA pins and bumps them with the tag in a comment,
+  # so pinning does not mean going stale.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
+      - github-actions
