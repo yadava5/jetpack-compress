@@ -11,6 +11,10 @@ dist
 dist-ssr
 *.local
 
+# Coverage output. No coverage reporter is wired up today; this is here so the
+# directory can never be committed by accident the day one is added.
+coverage
+
 # Editor / OS
 .vscode/*
 !.vscode/extensions.json

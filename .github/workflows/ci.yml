@@ -16,6 +16,13 @@ name: CI
 # machine — benchmarks/ENVIRONMENT.md records the exact box the committed JMH
 # results were measured on, and a shared CI runner would produce a different
 # number that looks like a correction and is not one.
+#
+# This repository is two halves and CI has to cover both. The Maven library at
+# the root is the subject; the Vite SPA in web/ is the thing that is actually
+# DEPLOYED. A pipeline that only ever compiled the Java would go green while the
+# published artifact was broken, which is the more likely failure of the two.
+# So the `web` job runs the same typecheck/unit/build gate a release would, and
+# `e2e` drives the built bundle in a real browser.
 
 on:
   push:
@@ -134,3 +141,94 @@ jobs:
           name: jacoco-report
           path: target/site/jacoco/
           if-no-files-found: error
+
+  web:
+    name: Typecheck, test and build the web app
+    runs-on: ubuntu-latest
+
+    # Every step here runs where the app actually lives. vercel.json is read
+    # from this directory too, and the deploy's Root Directory is `web` — so
+    # keeping CI in the same working directory keeps the two in step.
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          # Matches the version the suite was last verified on locally. The
+          # package.json declares no `engines`, so pinning here is the only
+          # place the runtime is stated at all.
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # `npm ci` rather than `npm install`: it installs exactly the lockfile and
+      # FAILS if package.json and package-lock.json have drifted. `npm install`
+      # would quietly rewrite the lock and go green on a tree that no longer
+      # matches what Vercel will resolve.
+      - name: Install
+        run: npm ci
+
+      # There is no ESLint in this project. `tsc -b` is the static check that
+      # exists, so it is the one CI runs — adding a linter here purely to have a
+      # step called "lint" would be new tooling, not new coverage.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      # The deploy runs this exact command (vercel.json: buildCommand
+      # "npm run build", outputDirectory "dist"). If it fails here it would have
+      # failed the deploy.
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # Only chromium: playwright.config.ts pins browserName to chromium for
+      # both projects, so downloading the other engines would cost minutes to
+      # install something no test opens.
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # The config's webServer builds the production bundle and serves it with
+      # `vite preview`, so this exercises the shipped output rather than the dev
+      # server. Two projects run: desktop, and the same suite under
+      # prefers-reduced-motion.
+      - name: Run e2e suite
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
