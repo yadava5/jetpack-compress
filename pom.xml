@@ -36,7 +36,7 @@
              alone leaves it empty and works; `mvn verify` fills it in. Both are
              exercised below. -->
         <jacoco.argLine/>
-        <jacoco.version>0.8.13</jacoco.version>
+        <jacoco.version>0.8.15</jacoco.version>
     </properties>
 
     <dependencies>
