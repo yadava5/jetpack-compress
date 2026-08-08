@@ -10,7 +10,7 @@ version: 2
 #   /booklet   package.json + package-lock.json   (builds the System Card)
 #   actions    .github/workflows/*.yml
 #
-# Weekly rather than daily: this is a small project with a single maintainer,
+# Monthly rather than weekly: this is a small project with a single maintainer,
 # and a queue of PRs nobody can review is worse than a slightly older lockfile.
 
 updates:
@@ -18,21 +18,30 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: weekly
-      day: monday
+      # Monthly, not weekly: version-update PRs arrived faster than one
+      # maintainer could review them. Dependabot SECURITY updates are a
+      # separate mechanism, unaffected by `schedule` (which governs version
+      # updates only), so vulnerability patches still arrive immediately.
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: build
     labels:
       - dependencies
       - java
+    groups:
+      maven-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   # ---- The deployed Vite SPA ---------------------------------------------
   - package-ecosystem: npm
     directory: "/web"
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: build
@@ -48,6 +57,23 @@ updates:
           - react-dom
           - "@types/react"
           - "@types/react-dom"
+      # TypeScript is split OUT of build-tooling, and this is the whole
+      # reason: it is the one member of that group that ships new DIAGNOSTICS
+      # in a major, so it is the one likeliest to redden the PR — and while it
+      # is red it blocks the innocent bumps riding with it. PR #18 was exactly
+      # this: TS 7.0.2 introduced TS2882 for un-declared CSS side-effect
+      # imports and failed the typecheck, holding up vite 8, vitest 4 and
+      # tailwind. Bisecting proved TypeScript was the sole cause and the other
+      # three were fine — a bisect that only worked because they could be
+      # separated at all. Listed BEFORE build-tooling: Dependabot assigns each
+      # dependency to the FIRST matching group, and build-tooling's list below
+      # would otherwise swallow it.
+      typescript:
+        patterns:
+          - typescript
+        update-types:
+          - minor
+          - patch
       # Build tooling churns on its own schedule and is safe to batch.
       build-tooling:
         patterns:
@@ -56,20 +82,25 @@ updates:
           - "@vitejs/*"
           - "@tailwindcss/*"
           - tailwindcss
-          - typescript
 
   # ---- The System Card booklet (PDF/print build, not deployed) ------------
   - package-ecosystem: npm
     directory: "/booklet"
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
     open-pull-requests-limit: 3
     commit-message:
       prefix: build
     labels:
       - dependencies
       - booklet
+    groups:
+      booklet-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   # ---- The workflows themselves ------------------------------------------
   # codeql.yml, gitleaks.yml and scorecard.yml pin their actions by commit SHA.
@@ -78,11 +109,28 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: ci
     labels:
       - dependencies
       - github-actions
+    groups:
+      # github/codeql-action/{init,autobuild,analyze,upload-sarif} are four
+      # sub-actions of ONE action and must move in lockstep. A PR that bumps
+      # only one leaves the workflow mismatched and CodeQL hard-fails:
+      #   ##[error]Loaded a configuration file for version '4.36.2', but running version '4.37.6'
+      # NO update-types key here on purpose: this group takes ALL update types
+      # (majors too), so the sub-actions can never split into separate PRs at
+      # any level. Listed first so these land here, not in the general group
+      # (Dependabot assigns a dependency to the first group it matches).
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
+      actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
