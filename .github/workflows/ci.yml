@@ -35,6 +35,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The cheapest job in this file, and deliberately first: a checkout and one
+  # stdlib-only python3 command. No JDK, no Maven, no npm install, no network.
+  #
+  # It verifies that every number in README.md, web/src/data/facts.ts and
+  # benchmarks/ENVIRONMENT.md still equals what the source and the committed
+  # JMH artifacts say — including the ratios, which are RECOMPUTED by dividing
+  # the raw scores rather than read as text. That is the guard that matters
+  # here: benchmarks/jmh-results.json (1 fork, 454.9 MB/s, 6.89x) and
+  # benchmarks/jmh-results-rigorous.json (3 forks, 422.0 MB/s, 6.38x) are both
+  # committed and both real, the table quotes the rigorous one on purpose, and
+  # the two pairs are close enough that swapping them reads like a correction.
+  #
+  # It does NOT run the suite, does NOT run JaCoCo and — emphatically — does
+  # NOT run JMH. Test counts and coverage live in docs/readme-facts.json,
+  # refreshed by `python3 scripts/readme_facts.py --record`. The benchmarks are
+  # never re-measured by any automation in this repo; see the note above about
+  # throughput being a property of the machine.
+  readme-facts:
+    name: Verify documented numbers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check every documented number against the code
+        run: python3 scripts/readme_facts.py --check
+
   test:
     name: Compile and test on JDK 25
     runs-on: ubuntu-latest

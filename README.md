@@ -1,9 +1,25 @@
-# jetpack-compress
+<p align="center">
+  <img src="docs/branding/readme-light.svg#gh-light-mode-only" width="800" alt="jetpack-compress">
+  <img src="docs/branding/readme-dark.svg#gh-dark-mode-only" width="800" alt="jetpack-compress">
+</p>
 
-> **Parallel, gzip-compatible compression on JDK 25** — blocks compress concurrently on virtual
-> threads and stitch into one byte-valid gzip member any tool can decompress.
+<h1 align="center">jetpack-compress</h1>
 
-<p>
+<p align="center">
+  <strong>Parallel, gzip-compatible compression on JDK 25 — blocks compress concurrently on virtual threads and stitch into one byte-valid gzip member any tool can decompress.</strong>
+</p>
+
+<p align="center">
+  <a href="https://jetpack-compress.vercel.app"><strong>Live site</strong></a> •
+  <a href="https://jetpack-compress.vercel.app/app"><strong>In-browser compressor</strong></a> •
+  <a href="https://jetpack-compress.vercel.app/system-card"><strong>System Card</strong></a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#benchmarks">Benchmarks</a> •
+  <a href="#quick-start">Quick start</a> •
+  <a href="https://github.com/yadava5/jetpack-compress">Source</a>
+</p>
+
+<p align="center">
   <img alt="JDK 25" src="https://img.shields.io/badge/JDK-25-orange">
   <img alt="Build: Maven" src="https://img.shields.io/badge/build-Maven-C71A36">
   <img alt="Tests: 72 passing" src="https://img.shields.io/badge/tests-72%20passing-brightgreen">
@@ -11,10 +27,14 @@
   <img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue">
 </p>
 
-**[Live site](https://jetpack-compress.vercel.app)** ·
-**[In-browser compressor](https://jetpack-compress.vercel.app/app)** ·
-**[System Card](https://jetpack-compress.vercel.app/system-card)** ·
-**[Source](https://github.com/yadava5/jetpack-compress)**
+<p align="center">
+  jetpack-compress is one of six projects presented together at
+  <a href="https://yadava5.github.io/Portfolio-2.0/">yadava5.github.io/Portfolio-2.0</a>.
+</p>
+
+---
+
+## Overview
 
 A high-throughput, **gzip-compatible** parallel compression engine written in modern Java
 (JDK 25). It splits input into independent blocks, DEFLATE-compresses them concurrently on
@@ -23,22 +43,20 @@ decompresses — `gzip -d`, `zcat`, `java.util.zip.GZIPInputStream`. It exists t
 and correctly, the newest parts of the Java platform: the **Vector API**, the **Foreign Function &
 Memory API**, and **virtual threads**.
 
-> **Status:** compiles clean on JDK 25 and all **72 tests pass** (`Tests run: 72, Failures: 0,
-> Errors: 0, Skipped: 0`), including external-tool round-trips against the system `gzip(1)`.
->
-> **Try it live:** the **[in-browser compressor](https://jetpack-compress.vercel.app/app)** is a
-> real, usable demo, and a self-contained web landing in [`web/`](web/) *visualizes* the engine —
-> the parallel pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches
-> the table below, error bars included). See [Web landing](#web-landing).
->
-> 📄 **[System Card](https://jetpack-compress.vercel.app/system-card)**
->
-> **Portfolio:** jetpack-compress is one of six projects, all presented at
-> [yadava5.github.io/Portfolio-2.0](https://yadava5.github.io/Portfolio-2.0/).
+**Status:** compiles clean on JDK 25 and all **72 tests pass** (`Tests run: 72, Failures: 0,
+Errors: 0, Skipped: 0`), including external-tool round-trips against the system `gzip(1)`. CI
+re-derives that line on every push from the surefire XML produced by the run it just did, and fails
+if the count disagrees with this file — so the number comes from a run record rather than from a
+sentence written after a run. That XML is **not committed**: `target/` is gitignored, and CI keeps it
+as a run artifact instead. The word "committed" applies to `jmh-results*.json` two sections down,
+which genuinely is in git; it does not apply here, and this sentence used to claim it did.
 
----
+**Try it live:** the **[in-browser compressor](https://jetpack-compress.vercel.app/app)** is a
+real, usable demo, and a self-contained web landing in [`web/`](web/) *visualizes* the engine —
+the parallel pipeline, the scalar-vs-vector SIMD race, and the benchmark bars (every number matches
+the table below, error bars included). See [Web landing](#web-landing).
 
-## Why it's interesting
+### Why it's interesting
 
 - **It's real gzip, proven three ways.** Output is validated by round-tripping through
   `GZIPInputStream`, by shelling out to the external `gzip -t` / `gzip -dc`, and the SIMD checksum
@@ -117,6 +135,46 @@ gzip -dc notes.txt.gz | diff - notes.txt   # identical
 ---
 
 ## Architecture
+
+### Component view
+
+```mermaid
+flowchart TB
+    CLI["cli/Main<br/>compress · decompress · adler · info"]
+
+    subgraph Engine["Engine — src/main/java/com/ayush/jetpack"]
+        direction TB
+        Mapped["io/MappedInput<br/>FFM mmap over a shared Arena"]
+        Split["Block splitter<br/>fixed-size blocks, default 1 MiB"]
+        Workers["Virtual-thread workers<br/>Deflater(nowrap) + CRC-32 per block<br/>bounded in-flight window"]
+        Writer["Writer / stitcher<br/>SYNC_FLUSH framing · Crc32Combine fold"]
+        Vec["vector/VectorizedAdler32<br/>jdk.incubator.vector · 16-byte NEON stride"]
+
+        Mapped --> Split
+        Split --> Workers
+        Workers --> Writer
+        Mapped --> Vec
+    end
+
+    Out(["One gzip member<br/>gzip -d · zcat · GZIPInputStream"])
+
+    CLI --> Mapped
+    Writer --> Out
+
+    JMH["JMH harness<br/>src/jmh · -Pbench → benchmarks/*.json"]
+    Web["web/ landing<br/>Vite + React 19 · src/data/facts.ts"]
+
+    JMH -. measures .-> Engine
+    Web -. visualizes .-> Engine
+```
+
+The FFM mapping is the single read of the file: it feeds the block splitter and the vectorized
+Adler-32 from the same `MemorySegment`, so neither path copies the whole input onto the heap. The
+writer is the only component that sees blocks in order. The JMH harness and the web landing are
+*consumers* of the engine — neither is on the compression path, and neither ships in the runnable
+jar (JMH builds only under `-Pbench`).
+
+### Block framing
 
 ```
                 input bytes / mmap'd MemorySegment
@@ -243,7 +301,13 @@ java --add-modules=jdk.incubator.vector -jar target/benchmarks.jar Adler32
 ## Correctness / testing
 
 `mvn verify` runs the 72 tests **and** writes a JaCoCo report. Measured on
-2026-08-03:
+2026-08-10 under **JDK 25.0.4 Temurin** — note that is *not* the JDK
+[ENVIRONMENT.md](benchmarks/ENVIRONMENT.md) pins for throughput work (25.0.3
+Homebrew). That pin exists because a benchmark number is meaningless without the
+machine that produced it; coverage is a static property of which lines the tests
+execute, so it does not move with the JDK, and these figures are byte-identical
+to the 2026-08-03 reading on the pinned build. The JDK is named anyway, because
+in a repository this strict about provenance you should not have to infer it:
 
 | Package | Line coverage |
 | --- | ---: |
@@ -338,6 +402,28 @@ npm run build     # production build -> web/dist  (must pass; `npm run typecheck
 ```
 
 The deploy target is **Vercel with the project root set to `web/`** (`web/vercel.json` is committed).
+
+---
+
+## Verify it
+
+Every number on this page terminates in a file you can open or a command you can run. None of it
+asks you to take the author's word for it.
+
+| Claim | Where it terminates |
+|---|---|
+| **The suite ran, and it ran clean** | CI's *Summarise the suite* step sums `target/surefire-reports/*.xml` and asserts `failures == errors == 0` **and** `tests > 0` — a green run that collected nothing is not a pass. The count itself is read off the uploaded `surefire-reports` artifact rather than pinned by that assertion, and `CrossToolTest` self-skips when `gzip` is absent from `PATH`, so "0 skipped" describes the reported run and not the gate. Locally: `mvn -B -DskipTests=false verify`. |
+| **6.4x parallel over single-thread, 2.80x vector over scalar Java** | [`benchmarks/jmh-results-rigorous.json`](benchmarks/jmh-results-rigorous.json) — raw JMH `-rf json`, carrying its own `forks`, `warmupIterations` and `measurementIterations` fields plus every individual iteration value, so the run configuration and the error bars are recomputable from the file rather than asserted next to it. |
+| **The quick run reads higher** | [`benchmarks/jmh-results.json`](benchmarks/jmh-results.json) — the 1-fork run, committed *beside* the rigorous one so the disagreement (6.89x against 6.38x on the same code) is visible instead of hidden. The table above quotes the slower one. |
+| **Which machine the numbers belong to** | [`benchmarks/ENVIRONMENT.md`](benchmarks/ENVIRONMENT.md) — M1 Pro, 10 cores (8P + 2E), 128-bit NEON, OpenJDK 25.0.3 (Homebrew), plus an explicit list of what was *not* controlled (no pinning, no fixed heap, ordinary laptop session). A different JDK or SIMD width yields a different ratio; that is a different measurement, not a correction. |
+| **Re-measure it yourself** | [Reproduce](#reproduce) above, and the longer walkthrough in [`benchmarks/README.md`](benchmarks/README.md) — including the `JAVA_HOME` trap where the `java` first on `PATH` is a JDK 21 that cannot build this project. |
+| **68.1% lines / 55.9% branches** | `mvn verify` writes `target/site/jacoco/jacoco.xml` and a browsable HTML report; CI re-reads the XML, prints the per-package breakdown, and exits non-zero below a **55%** floor — set below the measured value on purpose. Uploaded as the `jacoco-report` artifact. [Correctness / testing](#correctness--testing) explains why the blended figure is the least useful one in that table. |
+| **Static analysis on every push, PR and weekly** | [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) — CodeQL on push, on pull request, and weekly, because queries improve even when the code does not. Results land in the repository's Security tab. |
+| **Secret scanning over the whole history, not just the diff** | [`.github/workflows/gitleaks.yml`](.github/workflows/gitleaks.yml) — gitleaks checked out at `fetch-depth: 0`, so it scans every commit rather than the diff. A shallow clone would scan one commit and report clean, which is the failure this job exists to catch. |
+| **Supply-chain posture, graded by someone else** | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/yadava5/jetpack-compress) — computed and published by a third party from [`.github/workflows/scorecard.yml`](.github/workflows/scorecard.yml). A score this project calculates about itself would be a claim; one the OpenSSF publishes is evidence, and anyone can re-run it. |
+
+The three security workflows pin every action to a commit SHA rather than a tag, so a moved tag
+cannot change what they run. `ci.yml` and `booklet.yml` still use major-version tags.
 
 ---
 

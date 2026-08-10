@@ -144,6 +144,53 @@
     </build>
 
     <profiles>
+        <!-- The Maven entry point for the documentation fact-checker:
+
+                 mvn -Preadme-facts validate      (fails the build on drift)
+
+             Behind a profile, and bound to `validate`, on purpose. Bound to the
+             default lifecycle it would make every `mvn compile` depend on python3
+             being present; bound to a later phase it would only run after a
+             compile it does not need. scripts/readme_facts.py reads sources and
+             the committed benchmarks/jmh-results*.json, never target/, so it is
+             meaningful before anything has been built.
+
+             Refreshing the recorded figures (test counts, coverage) is the
+             script's own record mode, which runs `mvn verify` itself and is
+             therefore deliberately not reachable from inside Maven.
+
+             (XML comments cannot contain a double hyphen, which is why the flag
+             names are spelled out in prose here and appear only in the argument
+             elements below.) -->
+        <profile>
+            <id>readme-facts</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>readme-facts-check</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>python3</executable>
+                                    <arguments>
+                                        <argument>${project.basedir}/scripts/readme_facts.py</argument>
+                                        <argument>--check</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- JMH lives behind a profile so the default `mvn compile` / `mvn test` never touch it.
              Build the benchmark uber-jar with:  mvn -q -Pbench -DskipTests package
              Run it with the incubator vector module enabled (see README, section "Benchmarks"). -->

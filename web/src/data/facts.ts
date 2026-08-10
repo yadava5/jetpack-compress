@@ -3,8 +3,22 @@
  *
  * Every number and caption here was verified against the jetpack-compress repo:
  *   - counts + pass/fail from target/surefire-reports (re-run under OpenJDK 25.0.3)
- *   - throughput numbers from the README "Benchmarks" table (quick JMH run)
+ *   - throughput numbers from the committed RIGOROUS JMH artifact,
+ *     benchmarks/results/jmh-results-rigorous-*.json — 3 forks
  *   - scope statements from the source (ParallelGzipCompressor, VectorizedAdler32, MappedInput)
+ *
+ * THIS LINE USED TO SAY "from the README 'Benchmarks' table (quick JMH run)",
+ * and it was the most dangerous comment in the repository. The values below are
+ * the rigorous 3-fork ones — 1.52, 4.26, 66.2, 422.0, 6.4x, 2.8x — but an
+ * editor obeying that instruction would have pasted in the RETIRED quick 1-fork
+ * pair (455 MB/s, 6.89x, 4.38 GB/s) and published it on the live page. The two
+ * runs are different experiments, not a rounder and a sharper version of one,
+ * and mixing them is the specific trap this project keeps setting for itself.
+ * Never source a number here from a prose table; source it from the artifact.
+ *
+ * These values are now checked mechanically: scripts/readme_facts.py asserts
+ * every one of them against the JMH JSON on each run, and CI fails on a
+ * mismatch. Swapping in the quick run's numbers is a hard failure, by test.
  *
  * If a number is not honest and reproducible, it does not belong in this file.
  */
@@ -130,7 +144,7 @@ export const ADLER_BENCH = {
       label: 'Adler32.jdkIntrinsic',
       note: 'native intrinsic — reference, not beaten',
       gbps: 14.1,
-      mult: 9.2,
+      mult: 9.3,
       role: 'reference' as const,
     },
   ],

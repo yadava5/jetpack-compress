@@ -1,0 +1,66 @@
+{
+  "$comment": "Recorded facts for README.md and web/src/data/facts.ts -- the figures that require executing something whose output is not in git (target/ is gitignored). Regenerate with `python3 scripts/readme_facts.py --record`, then apply with `--write`. Do not hand-edit: the point of this file is that these numbers have a command behind them. The JMH throughput figures are deliberately ABSENT -- they are read straight from the committed benchmarks/jmh-results*.json, which are scoped to one machine and one JDK, and this script will not re-measure them.",
+  "recordedAt": "2026-08-10",
+  "machine": "darwin-arm64, python 3.9.6",
+  "jdk": "openjdk version \"25.0.4\" 2026-07-21 LTS",
+  "facts": {
+    "testsTotal": {
+      "value": 72,
+      "command": "mvn -B -DskipTests=false verify -DskipITs"
+    },
+    "testsRoundTrip": {
+      "value": 21,
+      "command": "mvn -B -DskipTests=false verify -DskipITs (target/surefire-reports/*.RoundTripTest.xml)"
+    },
+    "testsAdler32": {
+      "value": 35,
+      "command": "mvn -B -DskipTests=false verify -DskipITs (target/surefire-reports/*.Adler32Test.xml)"
+    },
+    "testsCrc32Combine": {
+      "value": 11,
+      "command": "mvn -B -DskipTests=false verify -DskipITs (target/surefire-reports/*.Crc32CombineTest.xml)"
+    },
+    "testsCrossTool": {
+      "value": 3,
+      "command": "mvn -B -DskipTests=false verify -DskipITs (target/surefire-reports/*.CrossToolTest.xml)"
+    },
+    "testsMappedInput": {
+      "value": 2,
+      "command": "mvn -B -DskipTests=false verify -DskipITs (target/surefire-reports/*.MappedInputTest.xml)"
+    },
+    "coverageLines": {
+      "value": 68.0723,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> target/site/jacoco/jacoco.xml"
+    },
+    "coverageBranches": {
+      "value": 55.9322,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> target/site/jacoco/jacoco.xml"
+    },
+    "coveragePackageVector": {
+      "value": 98.8506,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> jacoco.xml, package com/ayush/jetpack/vector"
+    },
+    "coveragePackageCore": {
+      "value": 87.3239,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> jacoco.xml, package com/ayush/jetpack/core"
+    },
+    "coveragePackageIo": {
+      "value": 84.2105,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> jacoco.xml, package com/ayush/jetpack/io"
+    },
+    "coveragePackageCli": {
+      "value": 0.0,
+      "command": "mvn -B -DskipTests=false verify -DskipITs -> jacoco.xml, package com/ayush/jetpack/cli"
+    }
+  },
+  "suiteOutcome": {
+    "command": "mvn -B -DskipTests=false verify -DskipITs",
+    "mavenExitCode": 0,
+    "tests": 72,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "allGreen": true,
+    "note": "CrossToolTest self-skips when gzip(1) is absent from PATH, so a skipped count above zero here describes the environment, not a regression."
+  }
+}
