@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           languages: ${{ matrix.language }}
 
@@ -44,9 +44,9 @@ jobs:
         # anything. Without a build the database is empty and the analysis
         # succeeds while having examined nothing.
         if: ${{ matrix.language == 'java-kotlin' }}
-        uses: github/codeql-action/autobuild@95e58e9a2cdfd71adc6e0353d5c52f41a045d225
+        uses: github/codeql-action/autobuild@cdf488f595d80d6e07e03d4674febd5ab45fa938
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           category: "/language:${{ matrix.language }}"
