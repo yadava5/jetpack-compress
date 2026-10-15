@@ -288,6 +288,11 @@ section.hero {
   font-size: 0.94rem;
   line-height: 1.6;
   margin: 0;
+  /* These paragraphs quote real identifiers, and the longest of them --
+     `Executors.newVirtualThreadPerTaskExecutor()`, 43 characters -- is one
+     unbreakable word wider than the card's content box at 375px. Without this
+     it overflowed the paragraph by 50px and pushed the document to 380px. */
+  overflow-wrap: break-word;
 }
 @media (max-width: 760px) {
   .feat-grid {
