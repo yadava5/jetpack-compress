@@ -16,7 +16,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <junit.version>5.11.4</junit.version>
+        <junit.version>5.14.4</junit.version>
         <jmh.version>1.37</jmh.version>
 
         <!-- Single source of truth for the module flags every phase needs. The Vector API
@@ -36,7 +36,7 @@
              alone leaves it empty and works; `mvn verify` fills it in. Both are
              exercised below. -->
         <jacoco.argLine/>
-        <jacoco.version>0.8.15</jacoco.version>
+        <jacoco.version>0.8.16</jacoco.version>
     </properties>
 
     <dependencies>
@@ -68,7 +68,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
                 <configuration>
                     <!-- The test JVM must also resolve the incubating Vector module.
                          @{jacoco.argLine} is surefire's LATE replacement syntax: it is
