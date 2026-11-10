@@ -294,7 +294,7 @@ export const PROJECTS = [
   {
     name: 'Applied',
     href: 'https://getapplied.vercel.app',
-    desc: 'Email-powered application tracker',
+    desc: 'Gmail job tracker on 220 hand written rules',
   },
   {
     name: 'Cadence',
@@ -310,10 +310,5 @@ export const PROJECTS = [
     name: 'Agentic AutoML',
     href: 'https://agentic-automl-platform.vercel.app',
     desc: 'AI-augmented AutoML toolchain',
-  },
-  {
-    name: 'in-browser classifier',
-    href: 'https://huggingface.co/spaces/yadava5/jobtracker-classifier',
-    desc: 'Transformers.js on a HF Space',
   },
 ] as const
